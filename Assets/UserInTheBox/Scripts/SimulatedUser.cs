@@ -41,8 +41,8 @@ namespace UserInTheBox
         public void Start()
         {
             // Initialise ZMQ server
-            //_port = UitBUtils.GetKeywordArgument("port");
-            _server = new ZmqServer("5555", 600);
+            _port = UitBUtils.GetKeywordArgument("port");
+            _server = new ZmqServer(_port, 60);
             
             // Wait for handshake from user-in-the-box simulated user
             var timeOptions = _server.WaitForHandshake();
