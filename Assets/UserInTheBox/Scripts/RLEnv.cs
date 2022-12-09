@@ -47,8 +47,11 @@ namespace UserInTheBox
             // Update headset position (might not have been updated before reset is called the first time)
             // headset.transform.position = simulatedUser._server.GetSimulationState().headsetPosition;
             
-            // Go to next state
-            sequenceManager.stateMachine.GotoNextState();
+            // Find the play state (may need to go through multiple states if e.g. game has ended)
+            while (sequenceManager.stateMachine.currentState != GameState.PlayRandom)
+            {
+                sequenceManager.stateMachine.GotoNextState();
+            }
 
             // Reset points
             _previousPoints = sequenceManager.Points;
