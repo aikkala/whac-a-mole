@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem.XR;
 
 namespace UserInTheBox
 {
@@ -19,13 +20,16 @@ namespace UserInTheBox
         public void Awake()
         {
             // Check if the this behaviour should be used
-            //enabled = UitBUtils.GetOptionalArgument("simulated");
-            enabled = false;
+            enabled = UitBUtils.GetOptionalArgument("simulated");
+            //enabled = true;
 
             if (enabled)
             {
                 // Disable camera always; less rendering, less computations?
                 mainCamera.enabled = false;
+                // Disable the TrackedPoseDriver as well, otherwise XR Origin will always
+                // try to reset position of camera to (0,0,0)?
+                mainCamera.GetComponent<TrackedPoseDriver>().enabled = false;
             }
             else
             {
