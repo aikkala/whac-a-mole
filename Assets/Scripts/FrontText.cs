@@ -16,7 +16,7 @@ public class FrontText : MonoBehaviour {
   private bool shrinking = false;
   private float scaleOnShrinkStart = 1.0f;
 
-  void Start() {
+  void Awake() {
     spawnStartTime = Time.time;
     transform.localScale = new Vector3(0, 0, 0);
 
