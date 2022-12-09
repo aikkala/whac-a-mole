@@ -84,6 +84,7 @@ public class Target: MonoBehaviour {
     _colorStart = Color.green;
     _colorEnd = Color.red;
     _material = gameObject.GetComponentInChildren<MeshRenderer>().material;
+    _material.color = _colorStart;
   }
   
   private void OnTriggerEnter(Collider other) {
@@ -105,9 +106,6 @@ public class Target: MonoBehaviour {
   }
 
   void OnFixedUpdateAlive() {
-
-    // Debug.Log("Inside OnFixedUpdateAfterPath: " + Time.fixedTime + " | globalBeat: " + globalBeat + " | localBeat: " + localBeat);
-    // Debug.Log("time of death: " + _tod);
     
     // If time has expired, make this box dead (and cannot be punched anymore)
     if (Time.fixedTime >= _tod)
@@ -138,7 +136,6 @@ public class Target: MonoBehaviour {
     // }
     
     // Collision counts as a hit only if the relative velocity is high enough (punch is strong enough)
-    Globals.Instance.debugText.text = $"Collision velocity: {other.GetComponent<ObjectMovement>().Velocity}"; 
     if (other.GetComponent<ObjectMovement>().Velocity.z < Globals.Instance.punchVelocityThreshold)
     {
        return;
