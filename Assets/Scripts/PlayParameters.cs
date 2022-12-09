@@ -28,14 +28,14 @@ public class PlayParameters {
     }
     else if (level == "medium")
     {
-      SpawnProbability = Time.smoothDeltaTime;
+      SpawnProbability = 1f/Application.targetFrameRate;
       MaxTargets = 3;
       TargetLifeSpan = new Vector2(1f, 3f);
       TargetSize = new Vector2(0.05f, 0.05f);
     }
     else if (level == "hard")
     {
-      SpawnProbability = Time.smoothDeltaTime;
+      SpawnProbability = 1f/Application.targetFrameRate;
       MaxTargets = 6;
       TargetLifeSpan = new Vector2(0.5f, 2f);
       TargetSize = new Vector2(0.05f, 0.05f);
@@ -44,7 +44,7 @@ public class PlayParameters {
     {
       // What should SpawnProbability be? Do we want to spawn a new target as soon as one of the existing targets
       // has been hit?
-      SpawnProbability = Time.smoothDeltaTime;
+      SpawnProbability = 1f/Application.targetFrameRate;
       MaxTargets = Random.Range(1, 7); // Max value is exclusive for integers
       float minTargetLifeSpan = Random.Range(0.5f, 2f);
       TargetLifeSpan = new Vector2(minTargetLifeSpan, Random.Range(minTargetLifeSpan, 4f));

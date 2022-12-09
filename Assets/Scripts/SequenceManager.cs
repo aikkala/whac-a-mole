@@ -125,6 +125,14 @@ public class SequenceManager : MonoBehaviour {
     stateMachine.State(GameState.PlayHard)                .OnExit += () => OnExitPlay();
     
     stateMachine.State(GameState.Ready)                   .OnExit += () => OnExitReady();
+
+    stateMachine.State(GameState.Done)                    .OnExit += () => OnExitDone();
+  }
+
+  void Awake()
+  {
+    // Set target frame rate to 60 Hz. This will be overwritten by SimulatedUser during simulations
+    Application.targetFrameRate = 60;
   }
   
   void Start() {
@@ -228,6 +236,11 @@ public class SequenceManager : MonoBehaviour {
   {
     SpawnFrontText(text);
   }
+
+  void OnExitDone()
+  {
+    HideFrontText();
+  }
   
   void OnUpdateDone() 
   {
@@ -242,16 +255,7 @@ public class SequenceManager : MonoBehaviour {
   void OnEnterReady(string mainText, string buttonText) 
   {
     // Move confirm box to where origin of TargetArea will be
-    // Globals.Instance.confirmBox.transform.parent.position = headset.transform.position + targetArea.TargetAreaPosition;
-
     Globals.Instance.confirmBox.transform.parent.transform.position = headset.position + targetArea.TargetAreaPosition;
-    
-    // Globals.Instance.debugText.text = "confirm box position: " + Globals.Instance.confirmBox.transform.parent.position.x + ", " 
-                                      // + Globals.Instance.confirmBox.transform.parent.position.y + ", " 
-                                      // + Globals.Instance.confirmBox.transform.parent.position.z + "\n\n" +
-      // "headset position: " + headset.position.x + ", " + headset.position.y + ", " + headset.position.z;
-
-    
     // Initialise confirm box
     SpawnFrontText(mainText);
     Globals.Instance.confirmBox.Show(true, buttonText);
