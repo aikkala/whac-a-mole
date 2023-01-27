@@ -112,6 +112,7 @@ public class Target: MonoBehaviour {
     {
       _material.color = Color.black;
       stateMachine.GotoState(TargetState.Dead);
+      Globals.Instance.sequenceManager.RecordMiss();
     }
   }
 
@@ -129,12 +130,6 @@ public class Target: MonoBehaviour {
   
   private void TargetCollision(Collider other) {
 
-    // If the target is already dead, ignore collisions
-    // if (stateMachine.currentState == TargetState.Dead)
-    // {
-    //   return;
-    // }
-    
     // Collision counts as a hit only if the relative velocity is high enough (punch is strong enough)
     if (other.GetComponent<ObjectMovement>().Velocity.z < Globals.Instance.punchVelocityThreshold)
     {
@@ -147,8 +142,8 @@ public class Target: MonoBehaviour {
     // Change target color to blue to indicate it has been punched
     _material.color = Color.blue;
 
-    // Give points
-    Globals.Instance.sequenceManager.AddPunchPoints(1);
+    // Record punch
+    Globals.Instance.sequenceManager.RecordPunch();
     
     // Move to dead state
     stateMachine.GotoState(TargetState.Dead);

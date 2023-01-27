@@ -8,7 +8,7 @@ public class TargetArea : MonoBehaviour
     private PlayParameters _playParameters;
 
     // Target area position is always the same
-    public Vector3 TargetAreaPosition => new Vector3(0.05f, -0.2f, 0.5f); 
+    public Vector3 TargetAreaPosition => new Vector3(0.1f, -0.1f, 0.40f); 
     public Quaternion TargetAreaRotation => new Quaternion(0, 0, 0, 1);
 
     public void SetLevel(string level)
@@ -29,12 +29,12 @@ public class TargetArea : MonoBehaviour
         transform.SetPositionAndRotation(headset.position + TargetAreaPosition, TargetAreaRotation);
     }
 
-    public void SpawnTarget()
+    public bool SpawnTarget()
     {
         // Sample a new target with given probability
         if (Random.Range(0f, 1f) > _playParameters.SpawnProbability || transform.childCount >= _playParameters.MaxTargets+1)
         {
-            return;
+            return false;
         } 
         
         // Instantiate a new target
@@ -44,6 +44,7 @@ public class TargetArea : MonoBehaviour
         newTarget.Position = SamplePosition();
         newTarget.Size = SampleSize();
         newTarget.LifeSpan = SampleLifeSpan();
+        return true;
     }
 
     private Vector3 SamplePosition()
@@ -59,7 +60,7 @@ public class TargetArea : MonoBehaviour
             var pos = new Vector3(h, w, d);
             var good = true;
             
-            foreach (var t in gameObject.GetComponents<Target>())
+            foreach (var t in gameObject.GetComponentsInChildren<Target>())
             {
                 // If the suggested position overlaps with the position of another target, break and sample a new
                 // position

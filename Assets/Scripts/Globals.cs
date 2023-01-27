@@ -9,7 +9,7 @@ public class Globals : Singleton<Globals> {
   [Header("Game parameters")] 
   
   [Range(0.0f, 10.0f)]
-  public float punchVelocityThreshold = 1.0f;
+  public float punchVelocityThreshold = 0.1f;
   
   [Space(10)]
   

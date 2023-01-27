@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
@@ -48,32 +49,33 @@ public class SequenceManager : MonoBehaviour {
   private int _points;
   public int Points
   {
-    get
-    {
-      return _points;
-    }
-    set
+    get => _points;
+    private set
     {
       _points = value;
       pointCounterText.text = _points.ToString();
     }
   }
 
-  private int _maxRounds = 5;
+  private const int MaxRounds = 1;
   private int _round;
-  public int Round
+  private int Round
   {
-    get { return _round; }
+    get => _round;
     set
     {
       _round = value;
-      roundCounterText.text = _round.ToString() + " / " + _maxRounds;
+      roundCounterText.text = _round.ToString() + " / " + MaxRounds;
     }
   }
+
+  // Number of points per punched target
+  private const int PunchValue = 8;
   
-  // Set round length (in seconds)
-  private float _roundLength = 10;
-  private float _roundStart;
+  // Set max number of total targets (punched and missed) per round
+  private const int MaxTargets = 10;
+  private int _punches;
+  private int _misses;
   
   // Target area where targets are spawned
   public TargetArea targetArea;
@@ -97,7 +99,7 @@ public class SequenceManager : MonoBehaviour {
     // On Enter
     stateMachine.State(GameState.Startup)                 .OnEnter += () => InitRun();
     
-    stateMachine.State(GameState.PlayRandom)              .OnEnter += () => OnEnterPlay("random");
+    stateMachine.State(GameState.PlayRandom)              .OnEnter += () => OnEnterPlay("easy");
     stateMachine.State(GameState.PlayEasy)                .OnEnter += () => OnEnterPlay("easy");
     stateMachine.State(GameState.PlayMedium)              .OnEnter += () => OnEnterPlay("medium");
     stateMachine.State(GameState.PlayHard)                .OnEnter += () => OnEnterPlay("hard");
@@ -152,8 +154,14 @@ public class SequenceManager : MonoBehaviour {
     stateMachine.CurrentState().InvokeOnUpdate();
   }
   
-  public void AddPunchPoints(int punchPoints) {
-    Points = _points + punchPoints;
+  public void RecordPunch() {
+    Points = _points + PunchValue;
+    _punches += 1;
+  }
+
+  public void RecordMiss()
+  {
+    _misses += 1;
   }
   
   void InitRun() {
@@ -196,21 +204,20 @@ public class SequenceManager : MonoBehaviour {
     // Increment round, start points from zero
     Round = _round + 1;
     Points = 0;
-
-    // Start round timer
-    _roundStart = Time.time;
+    _punches = 0;
+    _misses = 0;
     
     // Show scoreboard
-    // ShowScoreboard(false);
+    ShowScoreboard(true);
   }
   
   void OnUpdatePlay() 
   {
     // Check if time is up for this trial
-    if (Time.time - _roundStart >= _roundLength)
+    if (_punches+_misses >= MaxTargets)
     {
       // Check if game is finished
-      if (Round == _maxRounds)
+      if (Round >= MaxRounds)
       {
         stateMachine.GotoState(GameState.Done);
       }
@@ -223,13 +230,24 @@ public class SequenceManager : MonoBehaviour {
     {
       // Continue play; potentially spawn a new target
       targetArea.SpawnTarget();
+      foreach (var target in targetArea.GetComponentsInChildren<Target>())
+      {
+        if (target.stateMachine.currentState == TargetState.Alive)
+        {
+          var dist = Vector3.Distance(target.transform.position,
+            Globals.Instance.simulatedUser.rightHandController.transform.position);
+          var reward = (float)(Math.Exp(-3*dist) - 1) / 10;
+          Globals.Instance.debugText.text = reward.ToString();
+        }
+      }
+
     }
   }
 
   void OnExitPlay()
   {
     if (PlayStop != null) PlayStop();
-    // ShowScoreboard(true);
+    ShowScoreboard(false);
   }
   
   void OnEnterDone(string text) 
@@ -271,6 +289,7 @@ public class SequenceManager : MonoBehaviour {
   {
     // Globals.Instance.sensorTracker.SaveData();
     // Globals.Instance.SetLoadingState(true);
+    stateMachine.GotoNextState();
   }
 
   void OnUpdateSaving() 

@@ -1239,9 +1239,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e17595b9bf1973b5a924494c3c1981d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  headset: {fileID: 1240924498}
   sequenceManager: {fileID: 358941410}
-  simulatedUser: {fileID: 0}
+  simulatedUser: {fileID: 69392035}
 --- !u!1 &738878423
 GameObject:
   m_ObjectHideFlags: 0
@@ -1707,6 +1706,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 875697367}
+  - component: {fileID: 875697368}
   m_Layer: 0
   m_Name: UserInTheBox
   m_TagString: Untagged
@@ -1731,6 +1731,48 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &875697368
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 875697366}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: ea8c232a3daea24d2abf0a54964b780e, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &882053101
 GameObject:
   m_ObjectHideFlags: 0
@@ -2374,39 +2416,39 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 58680580, guid: 01095c1f88eed0049b6493aff759ecbd, type: 3}
       propertyPath: scaleTimeFactor
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 58680580, guid: 01095c1f88eed0049b6493aff759ecbd, type: 3}
       propertyPath: scaleCurve.m_Curve.Array.data[0].time
-      value: -0.9999113
+      value: -0.9987936
       objectReference: {fileID: 0}
     - target: {fileID: 58680580, guid: 01095c1f88eed0049b6493aff759ecbd, type: 3}
       propertyPath: scaleCurve.m_Curve.Array.data[2].time
-      value: 0.97308123
+      value: 0.97417986
       objectReference: {fileID: 0}
     - target: {fileID: 58680580, guid: 01095c1f88eed0049b6493aff759ecbd, type: 3}
       propertyPath: scaleCurve.m_Curve.Array.data[0].value
-      value: -0.00033463258
+      value: 0.00076400023
       objectReference: {fileID: 0}
     - target: {fileID: 58680580, guid: 01095c1f88eed0049b6493aff759ecbd, type: 3}
       propertyPath: scaleCurve.m_Curve.Array.data[2].value
-      value: 0.00018599653
+      value: 0.0012846293
       objectReference: {fileID: 0}
     - target: {fileID: 58680580, guid: 01095c1f88eed0049b6493aff759ecbd, type: 3}
       propertyPath: scaleCurve.m_Curve.Array.data[0].inSlope
-      value: 1.0033075
+      value: 1.0033303
       objectReference: {fileID: 0}
     - target: {fileID: 58680580, guid: 01095c1f88eed0049b6493aff759ecbd, type: 3}
       propertyPath: scaleCurve.m_Curve.Array.data[1].inSlope
-      value: -0.013564289
+      value: -0.012407899
       objectReference: {fileID: 0}
     - target: {fileID: 58680580, guid: 01095c1f88eed0049b6493aff759ecbd, type: 3}
       propertyPath: scaleCurve.m_Curve.Array.data[0].outSlope
-      value: 1.0033075
+      value: 1.0033303
       objectReference: {fileID: 0}
     - target: {fileID: 58680580, guid: 01095c1f88eed0049b6493aff759ecbd, type: 3}
       propertyPath: scaleCurve.m_Curve.Array.data[1].outSlope
-      value: -0.013564289
+      value: -0.012407899
       objectReference: {fileID: 0}
     - target: {fileID: 1834646480671130771, guid: 01095c1f88eed0049b6493aff759ecbd,
         type: 3}
@@ -2992,8 +3034,8 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.01
-  far clip plane: 1000
-  field of view: 93
+  far clip plane: 3
+  field of view: 90
   orthographic: 0
   orthographic size: 5
   m_Depth: 0

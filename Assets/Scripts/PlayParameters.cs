@@ -14,8 +14,8 @@ public class PlayParameters {
   public PlayParameters(string level) 
   {
     // The position and size of target area is the same in all levels of difficulty
-    TargetAreaHeight = 0.6f;
-    TargetAreaWidth = 0.6f;
+    TargetAreaHeight = 0.4f;
+    TargetAreaWidth = 0.4f;
     TargetAreaDepth = 0.001f;
     
     // Set difficulty parameters
@@ -23,7 +23,7 @@ public class PlayParameters {
     {
       SpawnProbability = 1;
       MaxTargets = 1;
-      TargetLifeSpan = new Vector2(2f, 4f);
+      TargetLifeSpan = new Vector2(4f, 4f);
       TargetSize = new Vector2(0.05f, 0.05f);
     }
     else if (level == "medium")

@@ -1,7 +1,7 @@
-using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
+
+// RGB-D rendering adapted from https://samarth-robo.github.io/blog/2021/12/28/unity_rgbd_rendering.html
 
 namespace UserInTheBox
 {
@@ -16,17 +16,34 @@ namespace UserInTheBox
         private RenderTexture _renderTexture;
         private Texture2D _tex;
         private bool _sendReply;
+        private bool _debug = false;
 
         public void Awake()
         {
-            // Check if the this behaviour should be used
-            enabled = UitBUtils.GetOptionalArgument("simulated");
-            //enabled = true;
+            if (_debug)
+            {
+                enabled = true;
+            }
+            else
+            {
+                // Check if simulated user is enabled
+                enabled = UitBUtils.GetOptionalArgument("simulated");
+            }
 
             if (enabled)
             {
-                // Disable camera always; less rendering, less computations?
+                // Disable camera; we will call the rendering manually?
                 mainCamera.enabled = false;
+                
+                // Make sure depth is rendered/stored, and attach a component to camera to handle RGB-D rendering
+                mainCamera.depthTextureMode = DepthTextureMode.Depth;
+                mainCamera.gameObject.AddComponent<RenderShader>();
+
+                // Set camera parameters, such as field of view, near/far clipping planes
+                mainCamera.fieldOfView = 90;
+                mainCamera.nearClipPlane = 0.01f;
+                mainCamera.farClipPlane = 3;
+
                 // Disable the TrackedPoseDriver as well, otherwise XR Origin will always
                 // try to reset position of camera to (0,0,0)?
                 mainCamera.GetComponent<TrackedPoseDriver>().enabled = false;
@@ -40,9 +57,21 @@ namespace UserInTheBox
 
         public void Start()
         {
+            // Get port for server
+            int timeOutSeconds;
+            if (_debug)
+            {
+                _port = "5555";
+                timeOutSeconds = 600;
+            }
+            else
+            {
+                _port = UitBUtils.GetKeywordArgument("port");
+                timeOutSeconds = 60;
+            }
+            
             // Initialise ZMQ server
-            _port = UitBUtils.GetKeywordArgument("port");
-            _server = new ZmqServer(_port, 60);
+            _server = new ZmqServer(_port, timeOutSeconds);
             
             // Wait for handshake from user-in-the-box simulated user
             var timeOptions = _server.WaitForHandshake();
@@ -64,8 +93,13 @@ namespace UserInTheBox
             const int width = 120;
             const int height = 80;
             _rect = new Rect(0, 0, width, height);
-            _renderTexture = new RenderTexture(width, height, 16);
-            _tex = new Texture2D(width, height, TextureFormat.RGB24, false);
+
+            // Create render texture, and make camera render into it
+            _renderTexture = new RenderTexture(width, height, 32, RenderTextureFormat.ARGB32);
+            mainCamera.targetTexture = _renderTexture;
+            
+            // Create 2D texture into which we copy from render texture
+            _tex = new Texture2D(width, height, TextureFormat.RGBAHalf, false);
 
         }
         
@@ -116,16 +150,14 @@ namespace UserInTheBox
             }
 
             // Get agent camera and manually render scene into renderTexture
-            mainCamera.targetTexture = _renderTexture;
             mainCamera.Render();
-
+            
             // ReadPixels will read from the currently active render texture so make our offscreen 
             // render texture active and then read the pixels
             RenderTexture.active = _renderTexture;
             _tex.ReadPixels(_rect, 0, 0);
 
-            // reset active camera texture and render texture
-            mainCamera.targetTexture = null;
+            // Reset active render texture
             RenderTexture.active = null;
 
             // Encode texture into PNG
