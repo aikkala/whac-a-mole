@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
 
@@ -95,7 +96,7 @@ namespace UserInTheBox
             _rect = new Rect(0, 0, width, height);
 
             // Create render texture, and make camera render into it
-            _renderTexture = new RenderTexture(width, height, 32, RenderTextureFormat.ARGB32);
+            _renderTexture = new RenderTexture(width, height, 16, RenderTextureFormat.ARGBHalf);
             mainCamera.targetTexture = _renderTexture;
             
             // Create 2D texture into which we copy from render texture

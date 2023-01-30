@@ -10,7 +10,7 @@ namespace UserInTheBox
         
         void Start()
         {
-            _shaderMaterial = GameObject.Find("UserInTheBox").GetComponent<MeshRenderer>().material;
+            _shaderMaterial = new Material(Shader.Find("UserInTheBox/RGBDShader"));
         }
 
         void OnRenderImage(RenderTexture source, RenderTexture destination)
