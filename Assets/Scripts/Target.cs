@@ -31,7 +31,7 @@ public class Target: MonoBehaviour {
       _originalScale = value;
       transform.localScale = new Vector3(value, value, value);
       // Set position again, so that the face of the target is on the plane
-      transform.localPosition += Vector3.forward * value;
+      // transform.localPosition += Vector3.forward * value;
     }
   }
 
@@ -50,6 +50,8 @@ public class Target: MonoBehaviour {
   // Spawn time and time-of-death
   private float _spawnTime, _tod;
 
+  public bool Initialised { get; set; }
+  
   // Color of target, changes based on how much time until tod
   private Color _colorStart, _colorEnd;
   private Material _material;
@@ -85,6 +87,7 @@ public class Target: MonoBehaviour {
     _colorEnd = Color.red;
     _material = gameObject.GetComponentInChildren<MeshRenderer>().material;
     _material.color = _colorStart;
+    Initialised = false;
   }
   
   private void OnTriggerEnter(Collider other) {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using TMPro;
 using TMPro.SpriteAssetUtilities;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 using UserInTheBox;
 
@@ -29,6 +30,7 @@ public class SequenceManager : MonoBehaviour {
   public Transform headset;
   
   // Set some info texts
+  public Transform pointScreen;
   public TextMeshPro pointCounterText;
   public TextMeshPro roundCounterText;
   public GameObject frontTextPrefab;
@@ -57,7 +59,7 @@ public class SequenceManager : MonoBehaviour {
     }
   }
 
-  private const int MaxRounds = 1;
+  private const int MaxRounds = 10;
   private int _round;
   private int Round
   {
@@ -65,17 +67,21 @@ public class SequenceManager : MonoBehaviour {
     set
     {
       _round = value;
-      roundCounterText.text = _round.ToString() + " / " + MaxRounds;
+      // roundCounterText.text = _round.ToString() + " / " + MaxRounds;
     }
   }
 
   // Number of points per punched target
-  private const int PunchValue = 8;
+  private const int PunchValue = 1;
   
   // Set max number of total targets (punched and missed) per round
-  private const int MaxTargets = 10;
+  // private const int MaxTargets = 10;
   private int _punches;
   private int _misses;
+  
+  // Set length of round (in seconds)
+  private const float RoundLength = 10;
+  private float _roundStart;
   
   // Target area where targets are spawned
   public TargetArea targetArea;
@@ -99,7 +105,7 @@ public class SequenceManager : MonoBehaviour {
     // On Enter
     stateMachine.State(GameState.Startup)                 .OnEnter += () => InitRun();
     
-    stateMachine.State(GameState.PlayRandom)              .OnEnter += () => OnEnterPlay("easy");
+    stateMachine.State(GameState.PlayRandom)              .OnEnter += () => OnEnterPlay("random");
     stateMachine.State(GameState.PlayEasy)                .OnEnter += () => OnEnterPlay("easy");
     stateMachine.State(GameState.PlayMedium)              .OnEnter += () => OnEnterPlay("medium");
     stateMachine.State(GameState.PlayHard)                .OnEnter += () => OnEnterPlay("hard");
@@ -200,21 +206,31 @@ public class SequenceManager : MonoBehaviour {
 
     // Set to correct position
     targetArea.SetPosition(headset);
+    
+    // Set also position of point screen (showing timer/score)
+    Vector3 pointScreenOffset = new Vector3(-0.5f, 0.0f, 2.5f);
+    pointScreen.SetPositionAndRotation(headset.position + pointScreenOffset, Quaternion.identity);
 
     // Increment round, start points from zero
     Round = _round + 1;
     Points = 0;
     _punches = 0;
     _misses = 0;
+    _roundStart = Time.time;
     
     // Show scoreboard
-    ShowScoreboard(true);
+    // ShowScoreboard(true);
   }
   
   void OnUpdatePlay() 
   {
+    // Update timer
+    float elapsed = Time.time - _roundStart;
+    roundCounterText.text = (elapsed >= RoundLength ? 0 : RoundLength - elapsed).ToString("N1");
+    
     // Check if time is up for this trial
-    if (_punches+_misses >= MaxTargets)
+    // if (_punches+_misses >= MaxTargets)
+    if (Time.time - _roundStart > RoundLength)
     {
       // Check if game is finished
       if (Round >= MaxRounds)
@@ -247,7 +263,7 @@ public class SequenceManager : MonoBehaviour {
   void OnExitPlay()
   {
     if (PlayStop != null) PlayStop();
-    ShowScoreboard(false);
+    // ShowScoreboard(false);
   }
   
   void OnEnterDone(string text) 
@@ -265,10 +281,10 @@ public class SequenceManager : MonoBehaviour {
     stateMachine.GotoNextState();
   }
   
-  void ShowScoreboard(bool show) 
-  {
-    Globals.Instance.scoreboard.GetComponent<ScaleToggle>().Show(show);
-  }
+  // void ShowScoreboard(bool show) 
+  // {
+  //   Globals.Instance.scoreboard.GetComponent<ScaleToggle>().Show(show);
+  // }
   
   void OnEnterReady(string mainText, string buttonText) 
   {

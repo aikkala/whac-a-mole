@@ -39,15 +39,15 @@ namespace UserInTheBox
             _previousPoints = points;
 
             // Also calculate distance component
-            foreach (var target in sequenceManager.targetArea.GetComponentsInChildren<Target>())
-            {
-                if (target.stateMachine.currentState == TargetState.Alive)
-                {
-                    var dist = Vector3.Distance(target.transform.position,
-                        simulatedUser.rightHandController.transform.position);
-                    _reward += (float)(Math.Exp(-10*dist) - 1) / 10;
-                }
-            }
+            // foreach (var target in sequenceManager.targetArea.GetComponentsInChildren<Target>())
+            // {
+            //     if (target.stateMachine.currentState == TargetState.Alive)
+            //     {
+            //         var dist = Vector3.Distance(target.transform.position,
+            //             simulatedUser.rightHandController.transform.position);
+            //         _reward += (float)(Math.Exp(-10*dist) - 1) / 100;
+            //     }
+            // }
         }
         
         public float GetReward()
