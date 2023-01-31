@@ -134,10 +134,11 @@ public class Target: MonoBehaviour {
   private void TargetCollision(Collider other) {
 
     // Collision counts as a hit only if the relative velocity is high enough (punch is strong enough)
-    if (other.GetComponent<ObjectMovement>().Velocity.z < Globals.Instance.punchVelocityThreshold)
+    Vector3 velocity = other.GetComponent<ObjectMovement>().Velocity;
+    if (velocity.magnitude < Globals.Instance.punchVelocityThreshold)
     {
        return;
-    }
+    } 
     
     // Update time-of-death
     _tod = Time.fixedTime;

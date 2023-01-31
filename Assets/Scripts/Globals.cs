@@ -7,9 +7,7 @@ public class Globals : Singleton<Globals> {
   public string timeFormat = "yyyy-MM-ddTHH:mm:ss";
 
   [Header("Game parameters")] 
-  
-  [Range(0.0f, 10.0f)]
-  public float punchVelocityThreshold = 0.1f;
+  public float punchVelocityThreshold = 1.0f;
   
   [Space(10)]
   

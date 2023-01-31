@@ -246,17 +246,6 @@ public class SequenceManager : MonoBehaviour {
     {
       // Continue play; potentially spawn a new target
       targetArea.SpawnTarget();
-      foreach (var target in targetArea.GetComponentsInChildren<Target>())
-      {
-        if (target.stateMachine.currentState == TargetState.Alive)
-        {
-          var dist = Vector3.Distance(target.transform.position,
-            Globals.Instance.simulatedUser.rightHandController.transform.position);
-          var reward = (float)(Math.Exp(-3*dist) - 1) / 10;
-          Globals.Instance.debugText.text = reward.ToString();
-        }
-      }
-
     }
   }
 
@@ -288,8 +277,9 @@ public class SequenceManager : MonoBehaviour {
   
   void OnEnterReady(string mainText, string buttonText) 
   {
-    // Move confirm box to where origin of TargetArea will be
-    Globals.Instance.confirmBox.transform.parent.transform.position = headset.position + targetArea.TargetAreaPosition;
+    // Move confirm box to the right of target area
+    Vector3 offset = new Vector3(-0.2f, -0.2f, 0.0f);
+    Globals.Instance.confirmBox.transform.parent.transform.position = headset.position + targetArea.TargetAreaPosition + offset;
     // Initialise confirm box
     SpawnFrontText(mainText);
     Globals.Instance.confirmBox.Show(true, buttonText);
