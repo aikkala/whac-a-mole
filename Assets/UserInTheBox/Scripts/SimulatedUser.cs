@@ -1,4 +1,3 @@
-using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
 
@@ -15,8 +14,10 @@ namespace UserInTheBox
         private string _port;
         private Rect _rect;
         private RenderTexture _renderTexture;
+        private RenderTexture _lightMap;
         private Texture2D _tex;
         private bool _sendReply;
+        private byte[] _previousImage;
         private bool _debug = false;
 
         public void Awake()
@@ -90,18 +91,23 @@ namespace UserInTheBox
             Time.maximumDeltaTime = 1.0f / Application.targetFrameRate;
             
             Screen.SetResolution(1, 1, false);
-            // TODO need to make sure width and height are set correctly, and then use Screen.height and Screen.width here instead of hardcoded values
+            // TODO need to make sure width and height are set correctly (read from some global config etc)
             const int width = 120;
             const int height = 80;
             _rect = new Rect(0, 0, width, height);
 
             // Create render texture, and make camera render into it
             _renderTexture = new RenderTexture(width, height, 16, RenderTextureFormat.ARGBHalf);
-            mainCamera.targetTexture = _renderTexture;
             
             // Create 2D texture into which we copy from render texture
             _tex = new Texture2D(width, height, TextureFormat.RGBAHalf, false);
-
+            
+            // Need this stupid hack to make rendered textures lighter (see answer by Invertex in
+            // https://forum.unity.com/threads/writting-to-rendertexture-comes-out-darker.427631/)
+            _lightMap = new RenderTexture(width, height, 16);
+            _lightMap.name = "stupid_hack";
+            _lightMap.enableRandomWrite = true;
+            _lightMap.Create();
         }
         
         public void Update()
@@ -140,10 +146,6 @@ namespace UserInTheBox
 
         public void LateUpdate()
         {
-            // Send response (observation) after frame has been rendered (and e.g. reward and termination condition 
-            // have been updated in RLEnv)
-            //StartCoroutine(SendObservationAtEndOfFrame());
-
             // If we didn't receive a state, don't send the observation
             if (!_sendReply)
             {
@@ -151,18 +153,23 @@ namespace UserInTheBox
             }
 
             // Get agent camera and manually render scene into renderTexture
+            mainCamera.targetTexture = _renderTexture;
             mainCamera.Render();
             
-            // ReadPixels will read from the currently active render texture so make our offscreen 
-            // render texture active and then read the pixels
-            RenderTexture.active = _renderTexture;
+            // ReadPixels will read from the currently active render texture
+            RenderTexture.active = _lightMap;
+            
+            // Do the hack to make image lighter
+            Graphics.Blit(_renderTexture, _lightMap);
+
+            // Read pixels from _lightMap into _tex
             _tex.ReadPixels(_rect, 0, 0);
 
             // Reset active render texture
             RenderTexture.active = null;
 
             // Encode texture into PNG
-            var image = _tex.EncodeToPNG();
+            _previousImage = _tex.EncodeToPNG();
 
             // Get reward
             var reward = env.GetReward();
@@ -171,9 +178,9 @@ namespace UserInTheBox
             var isFinished = env.IsFinished() || _server.GetSimulationState().isFinished;
 
             // Send observation to client
-            _server.SendObservation(isFinished, reward, image);
+            _server.SendObservation(isFinished, reward, _previousImage);
         }
-
+        
         private void OnDestroy()
         {
             _server?.Close();

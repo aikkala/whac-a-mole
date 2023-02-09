@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public enum TargetState {
   Alive       = 0,
@@ -135,7 +134,7 @@ public class Target: MonoBehaviour {
 
     // Collision counts as a hit only if the relative velocity is high enough (punch is strong enough)
     Vector3 velocity = other.GetComponent<ObjectMovement>().Velocity;
-    if (velocity.magnitude < Globals.Instance.punchVelocityThreshold)
+    if (velocity.z < Globals.Instance.punchVelocityThreshold)
     {
        return;
     } 

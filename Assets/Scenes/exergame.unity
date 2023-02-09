@@ -329,17 +329,17 @@ PrefabInstance:
     - target: {fileID: 7957796827297786059, guid: eb7b0d81414d6724fa971f03578cebd2,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.0138
+      value: 0.0096
       objectReference: {fileID: 0}
     - target: {fileID: 7957796827297786059, guid: eb7b0d81414d6724fa971f03578cebd2,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.048399985
+      value: -0.0491
       objectReference: {fileID: 0}
     - target: {fileID: 7957796827297786059, guid: eb7b0d81414d6724fa971f03578cebd2,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.0551
+      value: -0.0545
       objectReference: {fileID: 0}
     - target: {fileID: 7957796827297786059, guid: eb7b0d81414d6724fa971f03578cebd2,
         type: 3}
@@ -385,6 +385,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Layer
       value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 7957796827298215147, guid: eb7b0d81414d6724fa971f03578cebd2,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7957796827300211243, guid: eb7b0d81414d6724fa971f03578cebd2,
+        type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: eb7b0d81414d6724fa971f03578cebd2, type: 3}
@@ -1394,6 +1404,11 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 11
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: c5ac3d764a56954c5aa2c013eba63fa8,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6266062073211675587, guid: c5ac3d764a56954c5aa2c013eba63fa8,
         type: 3}
       propertyPath: m_Layer
@@ -1948,6 +1963,7 @@ Transform:
   m_Children:
   - {fileID: 69392034}
   - {fileID: 735238205}
+  - {fileID: 1333132543}
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2929,7 +2945,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: cf5c3949f0b9a044da1f04fa6e90e397,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cf5c3949f0b9a044da1f04fa6e90e397, type: 3}
@@ -3836,6 +3852,104 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b8b70956102f409d87292b232e6c73a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1333132542
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1333132543}
+  - component: {fileID: 1333132546}
+  - component: {fileID: 1333132545}
+  - component: {fileID: 1333132544}
+  m_Layer: 0
+  m_Name: Recorder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1333132543
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1333132542}
+  m_LocalRotation: {x: 0.17809825, y: -0.4605748, z: 0.08608389, w: 0.86529845}
+  m_LocalPosition: {x: 0.864, y: 1.229, z: -0.157}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 875697367}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 22.8, y: -56.239, z: -0.937}
+--- !u!114 &1333132544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1333132542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8f572a56f1a040399412210658ba682, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  simulatedUser: {fileID: 69392035}
+--- !u!81 &1333132545
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1333132542}
+  m_Enabled: 0
+--- !u!20 &1333132546
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1333132542}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_FocalLength: 50
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.01
+  far clip plane: 3
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
 --- !u!1 &1393096766
 GameObject:
   m_ObjectHideFlags: 0
@@ -4300,7 +4414,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timeFormat: yyyy-MM-ddTHH:mm:ss
-  punchVelocityThreshold: 1.5
+  punchVelocityThreshold: 1
   confirmBox: {fileID: 942978794}
   scoreboard: {fileID: 473334434}
   simulatedUser: {fileID: 69392035}
@@ -4397,7 +4511,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: cf5c3949f0b9a044da1f04fa6e90e397,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cf5c3949f0b9a044da1f04fa6e90e397, type: 3}
@@ -6202,7 +6316,7 @@ MeshRenderer:
   m_GameObject: {fileID: 5650094735269888942}
   m_Enabled: 1
   m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
   m_MotionVectors: 1
