@@ -16,8 +16,8 @@ public class PlayParameters {
   public PlayParameters(string level) 
   {
     // The position and size of target area is the same in all levels of difficulty
-    TargetAreaHeight = 0.4f;
-    TargetAreaWidth = 0.4f;
+    TargetAreaHeight = 0.3f;
+    TargetAreaWidth = 0.3f;
     TargetAreaDepth = 0.001f;
     
     // Set difficulty parameters
@@ -49,13 +49,13 @@ public class PlayParameters {
       // SpawnProbability = 1f/Application.targetFrameRate;
       
       // Choose max number of targets randomly from a set of 1, 3, 5
-      List<int> numTargets = new List<int> { 1, 3, 5 };
+      List<int> numTargets = new List<int> { 1 };
       int randomIndex = Random.Range(0, numTargets.Count);
       MaxTargets = numTargets[randomIndex];
 
       // float minTargetLifeSpan = Random.Range(0.5f, 2f);
       // TargetLifeSpan = new Vector2(minTargetLifeSpan, Random.Range(minTargetLifeSpan, 4f));
-      TargetLifeSpan = new Vector2(1.0f, 1.0f);
+      TargetLifeSpan = new Vector2(2.0f, 2.0f);
       TargetSize = new Vector2(0.03f, 0.03f);
       TargetSpawnBan = new Vector2(0.0f, 0.5f);
     }

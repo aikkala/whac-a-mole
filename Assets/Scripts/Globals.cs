@@ -5,9 +5,6 @@ using UserInTheBox;
 
 public class Globals : Singleton<Globals> {
   public string timeFormat = "yyyy-MM-ddTHH:mm:ss";
-
-  [Header("Game parameters")] 
-  public float punchVelocityThreshold = 1.0f;
   
   [Space(10)]
   

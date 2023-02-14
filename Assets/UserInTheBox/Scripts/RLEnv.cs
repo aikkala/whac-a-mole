@@ -14,11 +14,13 @@ namespace UserInTheBox
         public SimulatedUser simulatedUser;
         private float _reward, _previousPoints, _initialPoints;
         private bool _isFinished;
+        private Transform _marker;
 
         public void Start()
         {
             _initialPoints = sequenceManager.Points;
             _previousPoints = _initialPoints;
+            _marker = simulatedUser.rightHandController.Find("Hammer/marker").transform;
         }
         
         public void Update()
@@ -35,19 +37,18 @@ namespace UserInTheBox
         {
             // Get hit points
             int points = sequenceManager.Points;
-            _reward = points - _previousPoints;
+            _reward = (points - _previousPoints)*10;
             _previousPoints = points;
-
+            
             // Also calculate distance component
-            // foreach (var target in sequenceManager.targetArea.GetComponentsInChildren<Target>())
-            // {
-            //     if (target.stateMachine.currentState == TargetState.Alive)
-            //     {
-            //         var dist = Vector3.Distance(target.transform.position,
-            //             simulatedUser.rightHandController.transform.position);
-            //         _reward += (float)(Math.Exp(-10*dist) - 1) / 100;
-            //     }
-            // }
+            foreach (var target in sequenceManager.targetArea.GetComponentsInChildren<Target>())
+            {
+                if (target.stateMachine.currentState == TargetState.Alive)
+                {
+                    var dist = Vector3.Distance(target.transform.position, _marker.position);
+                    _reward += (float)(Math.Exp(-10*dist) - 1) / 10;
+                }
+            }
         }
         
         public float GetReward()

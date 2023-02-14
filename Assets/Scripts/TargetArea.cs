@@ -10,8 +10,8 @@ public class TargetArea : MonoBehaviour
     private float _spawnBan;
 
     // Target area position is always the same
-    public Vector3 TargetAreaPosition => new Vector3(0.1f, -0.1f, 0.45f); 
-    public Quaternion TargetAreaRotation => new Quaternion(0, 0, 0, 1);
+    public Vector3 TargetAreaPosition => new Vector3(0.1f, -0.2f, 0.4f); 
+    public Quaternion TargetAreaRotation => new Quaternion(0.3826834f, 0, 0, 0.9238795f);
 
     public void SetLevel(string level)
     {

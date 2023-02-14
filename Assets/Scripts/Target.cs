@@ -11,6 +11,9 @@ public class Target: MonoBehaviour {
   // State Machine
   public StateMachine<TargetState> stateMachine;
   
+  // Punch velocity threshold
+  private float punchVelocityThreshold = 0.3f;
+  
   // Target position and size
   public Vector3 Position
   {
@@ -134,7 +137,7 @@ public class Target: MonoBehaviour {
 
     // Collision counts as a hit only if the relative velocity is high enough (punch is strong enough)
     Vector3 velocity = other.GetComponent<ObjectMovement>().Velocity;
-    if (velocity.z < Globals.Instance.punchVelocityThreshold)
+    if (velocity.z < punchVelocityThreshold || velocity.y > -punchVelocityThreshold)
     {
        return;
     } 
