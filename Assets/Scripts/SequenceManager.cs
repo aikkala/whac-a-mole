@@ -6,6 +6,7 @@ using TMPro;
 using TMPro.SpriteAssetUtilities;
 using Unity.XR.CoreUtils;
 using UnityEngine;
+using UnityEngine.Events;
 using UserInTheBox;
 
 public enum GameState {
@@ -43,6 +44,9 @@ public class SequenceManager : MonoBehaviour {
   // public event System.Action<GameState> StateEnter;
   public event System.Action PlayStop;
   // public event System.Action UpdateTargets;
+  public UnityEvent onGameStarted = new UnityEvent();
+  public UnityEvent onGameFinished = new UnityEvent();
+
   
   // Game State (for all types of states)
   private RunIdentification currentRunId;
@@ -181,6 +185,9 @@ public class SequenceManager : MonoBehaviour {
     currentRunId.uuid = uid;
     currentRunId.startWallTime = System.DateTime.Now.ToString(Globals.Instance.timeFormat);
     currentRunId.startRealTime = Time.realtimeSinceStartup;
+
+    // Notify game to start logging
+    this.onGameStarted?.Invoke();
   }
 
   void SpawnFrontText(string text)
@@ -252,6 +259,9 @@ public class SequenceManager : MonoBehaviour {
   void OnExitPlay()
   {
     if (PlayStop != null) PlayStop();
+    // Notify game to start logging
+    this.onGameFinished?.Invoke();
+    
     // ShowScoreboard(false);
   }
   
