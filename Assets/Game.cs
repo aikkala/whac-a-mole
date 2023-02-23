@@ -63,7 +63,7 @@ public class Game : MonoBehaviour {
     /// </summary>
     private void Awake() {
         if ( instance && instance != this ) {
-            Debug.LogWarning($"There are multiple experiment managers in the scene. {this.name} will be destroyed.");
+            Debug.LogWarning($"There are multiple game managers in the scene. {this.name} will be destroyed.");
             Destroy(this);
             return;
         }
@@ -73,10 +73,11 @@ public class Game : MonoBehaviour {
         //this.AssertComponentOrInScene(ref this.phaseSpaceClient);
         //this.AssertComponentOrInScene(ref this.phaseSpaceManager);
 
+
         this.loggers.AddRange(FindObjectsOfType<Logger>());
 
         this.sequenceManager.onGameStarted.AddListener(this.StartLogging);
-        //this.sequenceManager.onExperimentCancelled.AddListener(this.StopLogging);
+        this.sequenceManager.onExperimentCancelled.AddListener(this.StopLogging);
         this.sequenceManager.onGameFinished.AddListener(this.StopLogging);
     }
 
@@ -84,6 +85,7 @@ public class Game : MonoBehaviour {
     /// Starts the data logging.
     /// </summary>
     public void StartLogging() {
+        Debug.Log("Starting the Loggers.");
         foreach ( var logger in this.loggers ) {
             logger.enabled = true;
         }
@@ -93,9 +95,11 @@ public class Game : MonoBehaviour {
     /// Stops the data logging.
     /// </summary>
     public void StopLogging() {
+        Debug.Log("Stopping the Loggers.");
         foreach ( var logger in this.loggers ) {
             logger.enabled = false;
         }
     }
+
 
 }

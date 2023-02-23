@@ -52,7 +52,7 @@ namespace PhaseSpace.Unity
                     if (!scanning)
                     {
 #if UNITY_EDITOR
-                        EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
+                        EditorApplication.playModeStateChanged  += OnPlaymodeStateChanged;
 #endif
                         var thread = new Thread(Scan);
                         thread.Start();
@@ -66,7 +66,7 @@ namespace PhaseSpace.Unity
             }
         }
 
-        static void OnPlaymodeStateChanged()
+        static void OnPlaymodeStateChanged(PlayModeStateChange state)
         {
 #if UNITY_EDITOR
             if (EditorApplication.isPlaying == false)
@@ -119,7 +119,7 @@ namespace PhaseSpace.Unity
             }
 
 #if UNITY_EDITOR
-            EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
+            EditorApplication.playModeStateChanged -= OnPlaymodeStateChanged;
 #endif
             scanning = false;
         }

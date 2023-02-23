@@ -3751,14 +3751,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Persistent: 0
   AutoScan: 0
-  AutoOpen: 0
-  AutoInitialize: 0
-  ServerAddress: 192.168.1.230
+  AutoOpen: 1
+  AutoInitialize: 1
+  ServerAddress: 132.180.197.65
   OpenTimeout: 5
   StreamingMode: 1
   Frequency: 240
   SlaveMode: 0
-  Profile: MoCap%20Suit
+  Profile: Glove%208
   CalibrationMode: 0
   EmbeddedProfile: {fileID: 0}
   EmbeddedDevices: {fileID: 0}
