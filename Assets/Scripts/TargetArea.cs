@@ -10,8 +10,10 @@ public class TargetArea : MonoBehaviour
     private float _spawnBan;
 
     // Target area position is always the same
-    public Vector3 TargetAreaPosition => new Vector3(0.1f, -0.2f, 0.4f); 
-    public Quaternion TargetAreaRotation => new Quaternion(0.3826834f, 0, 0, 0.9238795f);
+    // public Vector3 TargetAreaPosition => new Vector3(0.1f, -0.2f, 0.4f); 
+    // public Quaternion TargetAreaRotation => new Quaternion(0.3826834f, 0, 0, 0.9238795f);
+    public Vector3 TargetAreaPosition => new Vector3(0.1f, -0.1f, 0.4f); 
+    public Quaternion TargetAreaRotation => new Quaternion(0, 0, 0, 1);
 
     public void SetLevel(string level)
     {
@@ -37,11 +39,11 @@ public class TargetArea : MonoBehaviour
     {
         // Sample a new target after spawn ban has passed OR if there are no targets
         // if (Random.Range(0f, 1f) > _playParameters.SpawnProbability || transform.childCount >= _playParameters.MaxTargets+1)
-        if (transform.childCount >= _playParameters.MaxTargets + 1)
+        if (transform.childCount >= _playParameters.MaxTargets + 2)
         {
             return false;
         } 
-        else if (Time.time > _spawnBan || transform.childCount <= 1)
+        else if (Time.time > _spawnBan || transform.childCount <= 2)
         {
             // Instantiate a new target
             Target newTarget = Instantiate(target, transform.position, transform.rotation, transform);

@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using TMPro;
-using TMPro.SpriteAssetUtilities;
 using Unity.XR.CoreUtils;
 using UnityEngine;
-using UserInTheBox;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public enum GameState {
   Startup        = 0,
@@ -19,6 +15,7 @@ public enum GameState {
   PlayHard       = 13,
   
   Ready          = 20,
+  Countdown      = 21,
 }
 
 public class SequenceManager : MonoBehaviour {
@@ -28,6 +25,9 @@ public class SequenceManager : MonoBehaviour {
 
   // Headset transform for setting game height
   public Transform headset;
+  public GameObject rightController;
+  private XRInteractorLineVisual _lineVisual;
+  private GameObject _hammer;
   
   // Set some info texts
   public Transform pointScreen;
@@ -47,6 +47,11 @@ public class SequenceManager : MonoBehaviour {
   // Game State (for all types of states)
   private RunIdentification currentRunId;
   private float cooldownTimer;
+  
+  // Needed for countdown
+  private float _countdownStart;
+  private const float CountdownDuration = 3;
+  public TextMeshPro countdownText;
   
   private int _points;
   public int Points
@@ -95,6 +100,8 @@ public class SequenceManager : MonoBehaviour {
     
     // State transitions
     stateMachine.AddTransition(GameState.Startup,         GameState.Ready);
+    // stateMachine.AddTransition(GameState.Ready,           GameState.Countdown);
+    // stateMachine.AddTransition(GameState.Countdown,       GameState.PlayRandom);
     stateMachine.AddTransition(GameState.Ready,           GameState.PlayRandom);
     stateMachine.AddTransition(GameState.PlayRandom,      GameState.Ready);
     stateMachine.AddTransition(GameState.PlayRandom,      GameState.Done);
@@ -111,12 +118,14 @@ public class SequenceManager : MonoBehaviour {
     stateMachine.State(GameState.PlayHard)                .OnEnter += () => OnEnterPlay("hard");
     
     stateMachine.State(GameState.Ready)                   .OnEnter += () => OnEnterReady("Punch the target to start next round", "");
+    // stateMachine.State(GameState.Countdown)               .OnEnter += () => OnEnterCountdown();
     
     stateMachine.State(GameState.Done)                    .OnEnter += () => OnEnterDone("Thank you for playing!\n\n Please take off the headset.");
     stateMachine.State(GameState.Saving)                  .OnEnter += () => OnEnterSaving();
 
     // On Update
     stateMachine.State(GameState.Startup)                 .OnUpdate += () => stateMachine.GotoNextState(); // Allow one update so headset position is updated
+    // stateMachine.State(GameState.Countdown)               .OnUpdate += () => OnUpdateCountdown();
     
     stateMachine.State(GameState.PlayRandom)              .OnUpdate += () => OnUpdatePlay();
     stateMachine.State(GameState.PlayEasy)                .OnUpdate += () => OnUpdatePlay();
@@ -133,6 +142,7 @@ public class SequenceManager : MonoBehaviour {
     stateMachine.State(GameState.PlayHard)                .OnExit += () => OnExitPlay();
     
     stateMachine.State(GameState.Ready)                   .OnExit += () => OnExitReady();
+    // stateMachine.State(GameState.Countdown)               .OnExit += () => OnExitCountdown();
 
     stateMachine.State(GameState.Done)                    .OnExit += () => OnExitDone();
   }
@@ -141,11 +151,17 @@ public class SequenceManager : MonoBehaviour {
   {
     // Set target frame rate to 60 Hz. This will be overwritten by SimulatedUser during simulations
     Application.targetFrameRate = 60;
+    
+    // Get ray line renderer and hammer renderer
+    _lineVisual = rightController.GetComponent<XRInteractorLineVisual>();
+    _hammer = rightController.GetNamedChild("Hammer");
+
+    // Ray line is enabled by default, and hammer is disabled
+    _lineVisual.enabled = true;
+    _hammer.SetActive(false);
   }
   
   void Start() {
-    Globals.Instance.confirmBox.triggered += () => stateMachine.GotoNextState();
-
     // Initialise state machine
     InitStateMachine();
     stateMachine.State(stateMachine.currentState).InvokeOnEnter();
@@ -172,7 +188,7 @@ public class SequenceManager : MonoBehaviour {
   
   void InitRun() {
     var uid = System.Guid.NewGuid().ToString();
-    Debug.Log("Initializing new run with Run ID: " + uid);
+    // Debug.Log("Initializing new run with Run ID: " + uid);
 
     Points = 0;
     Round = 0;
@@ -201,11 +217,12 @@ public class SequenceManager : MonoBehaviour {
   
   void OnEnterPlay(string difficulty) 
   {
+    // Hide the controller ray, show hammer
+    _lineVisual.enabled = false;
+    _hammer.SetActive(true);
+    
     // Set play (difficulty) parameters
     targetArea.SetLevel(difficulty);
-
-    // Set to correct position
-    targetArea.SetPosition(headset);
     
     // Set also position of point screen (showing timer/score)
     Vector3 pointScreenOffset = new Vector3(-0.5f, 0.0f, 2.5f);
@@ -255,7 +272,7 @@ public class SequenceManager : MonoBehaviour {
     // ShowScoreboard(false);
   }
   
-  void OnEnterDone(string text) 
+  void OnEnterDone(string text)
   {
     SpawnFrontText(text);
   }
@@ -276,19 +293,16 @@ public class SequenceManager : MonoBehaviour {
   // }
   
   void OnEnterReady(string mainText, string buttonText) 
-  {
-    // Move confirm box to the right of target area
-    Vector3 offset = new Vector3(-0.2f, -0.2f, 0.0f);
-    Globals.Instance.confirmBox.transform.parent.transform.position = headset.position + targetArea.TargetAreaPosition + offset;
-    // Initialise confirm box
-    SpawnFrontText(mainText);
-    Globals.Instance.confirmBox.Show(true, buttonText);
+  {    
+    // Hide hammer, show ray
+    _lineVisual.enabled = true;
+    _hammer.SetActive(false);
   }
   
   void OnExitReady() 
-  { 
-    HideFrontText();
-    Globals.Instance.confirmBox.Show(false, "");
+  {
+    // Set target area to correct position
+    targetArea.SetPosition(headset);
   }
   
   void OnEnterSaving() 
@@ -304,5 +318,22 @@ public class SequenceManager : MonoBehaviour {
     // {
       // stateMachine.GotoNextState();
     // }
+  }
+
+  void OnEnterCountdown()
+  {
+    _countdownStart = Time.time;
+    countdownText.text = "3";
+    countdownText.enabled = true;
+  }
+  void OnUpdateCountdown()
+  {
+    float elapsed = CountdownDuration - (Time.time - _countdownStart);
+    countdownText.text = Math.Max(elapsed, 0).ToString("N1");
+  }
+
+  void OnExitCountdown()
+  {
+    countdownText.enabled = false;
   }
 }

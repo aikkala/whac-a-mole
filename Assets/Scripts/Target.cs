@@ -12,7 +12,7 @@ public class Target: MonoBehaviour {
   public StateMachine<TargetState> stateMachine;
   
   // Punch velocity threshold
-  private float punchVelocityThreshold = 0.3f;
+  private float punchVelocityThreshold = 0.6f;
   
   // Target position and size
   public Vector3 Position
@@ -77,8 +77,6 @@ public class Target: MonoBehaviour {
     stateMachine.State(TargetState.Alive)     .OnUpdate      += OnUpdateAlive;
     stateMachine.State(TargetState.Dead)      .OnUpdate      += OnUpdateDead;
     
-    stateMachine.State(TargetState.Alive)     .OnCollision   += TargetCollision;
-    
     Globals.Instance.sequenceManager          .PlayStop      += DestroyTarget;
     
     // Get spawn time
@@ -92,10 +90,6 @@ public class Target: MonoBehaviour {
     Initialised = false;
   }
   
-  private void OnTriggerEnter(Collider other) {
-    stateMachine.CurrentState().InvokeOnCollision(other);
-  }
-
   void Update() {
     stateMachine.CurrentState().InvokeOnUpdate();
   }
@@ -133,21 +127,24 @@ public class Target: MonoBehaviour {
     _material.color = Color.Lerp(_colorStart, _colorEnd, (Time.time - _spawnTime) / _lifeSpan);
   }
   
-  private void TargetCollision(Collider other) {
-
+  private void OnTriggerEnter(Collider other) {
+  
     // Collision counts as a hit only if the relative velocity is high enough (punch is strong enough)
     Vector3 velocity = other.GetComponent<ObjectMovement>().Velocity;
-    if (velocity.z < punchVelocityThreshold || velocity.y > -punchVelocityThreshold)
+    Globals.Instance.debugText.text = velocity.ToString();
+    // if (velocity.z < punchVelocityThreshold || velocity.y > -punchVelocityThreshold)
+    if (velocity.z < punchVelocityThreshold)
+    // if (velocity.y > -punchVelocityThreshold)
     {
-       return;
-    } 
-    
+      return;
+    }
+  
     // Update time-of-death
     _tod = Time.fixedTime;
       
     // Change target color to blue to indicate it has been punched
     _material.color = Color.blue;
-
+  
     // Record punch
     Globals.Instance.sequenceManager.RecordPunch();
     
@@ -155,24 +152,6 @@ public class Target: MonoBehaviour {
     stateMachine.GotoState(TargetState.Dead);
   }
   
-  // private void OnEnterPunched() 
-  // {
-  //   // Change target color to blue to indicate it has been punched
-  //   _material.color = Color.blue;
-  //   
-  //   // Move to next state
-  //   stateMachine.GotoNextState();
-  // }
-
-  // private void OnEnterMissed()
-  // {
-  //   // Change target color to black to indicate it has been missed
-  //   _material.color = Color.black;
-  //   
-  //   // Move to next state
-  //   stateMachine.GotoNextState();
-  // }
-
   private void OnUpdateDead()
   {
     // The target fades away (quickly)

@@ -10,7 +10,6 @@ public class Globals : Singleton<Globals> {
   
   [Header("Game Global Objects")]
   
-  public ConfirmBox confirmBox;
   public GameObject scoreboard;
   public SimulatedUser simulatedUser;
   public SequenceManager sequenceManager;

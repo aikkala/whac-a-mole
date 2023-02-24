@@ -16,7 +16,7 @@ public class ObjectMovement : MonoBehaviour {
     _velocity = new Vector3();
   }
 
-  void FixedUpdate() {
+  void Update() {
     var currVelocity = (transform.position - _oldPos) / Time.deltaTime;
     _oldPos = transform.position;
     _velocity = Vector3.Lerp(_velocity, currVelocity, 0.5f);

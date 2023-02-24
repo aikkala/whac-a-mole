@@ -55,8 +55,8 @@ public class PlayParameters {
 
       // float minTargetLifeSpan = Random.Range(0.5f, 2f);
       // TargetLifeSpan = new Vector2(minTargetLifeSpan, Random.Range(minTargetLifeSpan, 4f));
-      TargetLifeSpan = new Vector2(2.0f, 2.0f);
-      TargetSize = new Vector2(0.03f, 0.03f);
+      TargetLifeSpan = new Vector2(3.0f, 3.0f);
+      TargetSize = new Vector2(0.025f, 0.025f);
       TargetSpawnBan = new Vector2(0.0f, 0.5f);
     }
     else
