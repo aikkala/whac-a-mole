@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace UserInTheBox
 {
     public static class UitBUtils
@@ -33,6 +35,21 @@ namespace UserInTheBox
             }
 
             return false;
+        }
+
+        public static string TransformToString(Transform transform)
+        {
+            return Vector3ToString(transform.position) + ", " + QuaternionToString(transform.rotation);
+        }
+
+        public static string Vector3ToString(Vector3 vec)
+        {
+            return vec.x + "," + vec.y + "," + vec.z;
+        }
+
+        public static string QuaternionToString(Quaternion quat)
+        {
+            return quat.x + ", " + quat.y + ", " + quat.z + ", " + quat.w;
         }
     }
 }
