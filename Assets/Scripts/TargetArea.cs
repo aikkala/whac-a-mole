@@ -1,49 +1,42 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class TargetArea : MonoBehaviour
 {
     public Target target;
-    private PlayParameters _playParameters;
     private float _spawnBan;
+    private PlayParameters _playParameters;
 
-    // Target area position is always the same
-    // public Vector3 TargetAreaPosition => new Vector3(0.1f, -0.2f, 0.4f); 
-    // public Quaternion TargetAreaRotation => new Quaternion(0.3826834f, 0, 0, 0.9238795f);
-    public Vector3 TargetAreaPosition => new Vector3(0.1f, -0.1f, 0.4f); 
-    public Quaternion TargetAreaRotation => new Quaternion(0, 0, 0, 1);
-
-    public void SetLevel(string level)
+    public void SetPlayParameters(PlayParameters playParameters)
     {
-        _playParameters = new PlayParameters(level);
-        
-        // Change the scale of the visualised area
-        transform.Find("area").transform.localScale = new Vector3(
-            _playParameters.TargetAreaWidth, 
-            _playParameters.TargetAreaHeight,
-            _playParameters.TargetAreaDepth
-            );
-        
+        _playParameters = playParameters;
     }
-
+    
     public void SetPosition(Transform headset)
     {
-        // transform.SetPositionAndRotation(headset.InverseTransformDirection(TargetAreaPosition), TargetAreaRotation);
-        transform.SetPositionAndRotation(headset.position + TargetAreaPosition, TargetAreaRotation);
-        // transform.LookAt(headset.transform);
+        transform.SetPositionAndRotation(headset.position + _playParameters.targetAreaPosition, 
+            _playParameters.targetAreaRotation);
+    }
+
+    public void SetScale()
+    {
+        transform.Find("area").transform.localScale = new Vector3(
+            _playParameters.targetAreaWidth, 
+            _playParameters.targetAreaHeight,
+            _playParameters.targetAreaDepth
+        );
     }
 
     public bool SpawnTarget()
     {
         // Sample a new target after spawn ban has passed OR if there are no targets
         // if (Random.Range(0f, 1f) > _playParameters.SpawnProbability || transform.childCount >= _playParameters.MaxTargets+1)
-        if (transform.childCount >= _playParameters.MaxTargets + 2)
+        if (transform.childCount >= _playParameters.maxTargets + 2)
         {
             return false;
         } 
-        else if (Time.time > _spawnBan || transform.childCount <= 2)
+        
+        if (Time.time > _spawnBan || transform.childCount <= 2)
         {
             // Instantiate a new target
             Target newTarget = Instantiate(target, transform.position, transform.rotation, transform);
@@ -73,9 +66,9 @@ public class TargetArea : MonoBehaviour
         int idx = 0;
         for (; idx < 10; idx++)
         {
-            x = Random.Range(-_playParameters.TargetAreaWidth/2, _playParameters.TargetAreaWidth/2);
-            y = Random.Range(-_playParameters.TargetAreaHeight/2, _playParameters.TargetAreaHeight/2);
-            z = Random.Range(-_playParameters.TargetAreaDepth/2, _playParameters.TargetAreaDepth/2) + targetSize;
+            x = Random.Range(-_playParameters.targetAreaWidth/2, _playParameters.targetAreaWidth/2);
+            y = Random.Range(-_playParameters.targetAreaHeight/2, _playParameters.targetAreaHeight/2);
+            z = Random.Range(-_playParameters.targetAreaDepth/2, _playParameters.targetAreaDepth/2) + targetSize;
             pos = new Vector3(x, y, z);
             var good = true;
             
@@ -109,16 +102,16 @@ public class TargetArea : MonoBehaviour
 
     private float SampleSize()
     {
-        return Random.Range(_playParameters.TargetSize[0], _playParameters.TargetSize[1]);
+        return Random.Range(_playParameters.targetSize[0], _playParameters.targetSize[1]);
     }
 
     private float SampleLifeSpan()
     {
-        return Random.Range(_playParameters.TargetLifeSpan[0], _playParameters.TargetLifeSpan[1]);
+        return Random.Range(_playParameters.targetLifeSpan[0], _playParameters.targetLifeSpan[1]);
     }
 
     private float SampleSpawnBan()
     {
-        return Random.Range(_playParameters.TargetSpawnBan[0], _playParameters.TargetSpawnBan[1]);
+        return Random.Range(_playParameters.targetSpawnBan[0], _playParameters.targetSpawnBan[1]);
     }
 }

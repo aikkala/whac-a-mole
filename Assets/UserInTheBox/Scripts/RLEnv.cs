@@ -29,8 +29,7 @@ namespace UserInTheBox
             CalculateReward();
             
             // Update finished
-            _isFinished = sequenceManager.stateMachine.currentState.Equals(GameState.Done) || 
-                          sequenceManager.stateMachine.currentState.Equals(GameState.Ready);
+            _isFinished = sequenceManager.stateMachine.currentState.Equals(GameState.Ready);
         }
 
         private void CalculateReward()
@@ -63,12 +62,15 @@ namespace UserInTheBox
 
         public void Reset()
         {
-            // Find the play state (may need to go through multiple states if e.g. game has ended)
-            while (sequenceManager.stateMachine.currentState != GameState.PlayRandom)
-            {
-                sequenceManager.stateMachine.GotoNextState();
-            }
+            // Set play level
+            sequenceManager.playParameters.SetLevel("medium", true);
+            
+            // Visit Ready state, as some important stuff will be set (on exit)
+            sequenceManager.stateMachine.GotoState(GameState.Ready);
 
+            // Start playing
+            sequenceManager.stateMachine.GotoState(GameState.Play);
+            
             // Reset points
             _previousPoints = sequenceManager.Points;
         }

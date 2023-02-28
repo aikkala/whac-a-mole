@@ -6,16 +6,9 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public enum GameState {
   Startup        = 0,
-  Done           = 1,
-  Saving         = 2,
-  
-  PlayRandom     = 10,
-  PlayEasy       = 11,
-  PlayMedium     = 12,
-  PlayHard       = 13,
-  
-  Ready          = 20,
-  Countdown      = 21,
+  Ready          = 1,
+  Countdown      = 2,
+  Play           = 3,
 }
 
 public class SequenceManager : MonoBehaviour {
@@ -25,6 +18,8 @@ public class SequenceManager : MonoBehaviour {
 
   // Headset transform for setting game height
   public Transform headset;
+  
+  // Right controller for visualising controller ray / hammer
   public GameObject rightController;
   private XRInteractorLineVisual _lineVisual;
   private GameObject _hammer;
@@ -33,26 +28,20 @@ public class SequenceManager : MonoBehaviour {
   public Transform pointScreen;
   public TextMeshPro pointCounterText;
   public TextMeshPro roundCounterText;
-  public GameObject frontTextPrefab;
-  public Transform  frontTextAnchor;
-  private FrontText _currentFrontText;
-  public event System.Action FrontTextShrink;
-  
-  // Global events
-  // public event System.Action<string> UpdateTrackers;
-  // public event System.Action<GameState> StateEnter;
   public event System.Action PlayStop;
-  // public event System.Action UpdateTargets;
+  
+  // UI for choosing game levels
+  public GameObject levelChooser;
   
   // Game State (for all types of states)
   private RunIdentification currentRunId;
-  private float cooldownTimer;
   
   // Needed for countdown
   private float _countdownStart;
   private const float CountdownDuration = 3;
   public TextMeshPro countdownText;
   
+  // Keep score of points
   private int _points;
   public int Points
   {
@@ -64,29 +53,19 @@ public class SequenceManager : MonoBehaviour {
     }
   }
 
-  private const int MaxRounds = 10;
-  private int _round;
-  private int Round
-  {
-    get => _round;
-    set
-    {
-      _round = value;
-      // roundCounterText.text = _round.ToString() + " / " + MaxRounds;
-    }
-  }
-
   // Number of points per punched target
   private const int PunchValue = 1;
   
   // Set max number of total targets (punched and missed) per round
-  // private const int MaxTargets = 10;
   private int _punches;
   private int _misses;
   
   // Set length of round (in seconds)
   private const float RoundLength = 10;
   private float _roundStart;
+  
+  // Play parameters
+  public PlayParameters playParameters;
   
   // Target area where targets are spawned
   public TargetArea targetArea;
@@ -100,51 +79,23 @@ public class SequenceManager : MonoBehaviour {
     
     // State transitions
     stateMachine.AddTransition(GameState.Startup,         GameState.Ready);
-    // stateMachine.AddTransition(GameState.Ready,           GameState.Countdown);
-    // stateMachine.AddTransition(GameState.Countdown,       GameState.PlayRandom);
-    stateMachine.AddTransition(GameState.Ready,           GameState.PlayRandom);
-    stateMachine.AddTransition(GameState.PlayRandom,      GameState.Ready);
-    stateMachine.AddTransition(GameState.PlayRandom,      GameState.Done);
-    
-    stateMachine.AddTransition(GameState.Done,            GameState.Saving);
-    stateMachine.AddTransition(GameState.Saving,          GameState.Startup);
+    stateMachine.AddTransition(GameState.Ready,           GameState.Countdown);
+    stateMachine.AddTransition(GameState.Countdown,       GameState.Play);
     
     // On Enter
     stateMachine.State(GameState.Startup)                 .OnEnter += () => InitRun();
-    
-    stateMachine.State(GameState.PlayRandom)              .OnEnter += () => OnEnterPlay("random");
-    stateMachine.State(GameState.PlayEasy)                .OnEnter += () => OnEnterPlay("easy");
-    stateMachine.State(GameState.PlayMedium)              .OnEnter += () => OnEnterPlay("medium");
-    stateMachine.State(GameState.PlayHard)                .OnEnter += () => OnEnterPlay("hard");
-    
-    stateMachine.State(GameState.Ready)                   .OnEnter += () => OnEnterReady("Punch the target to start next round", "");
-    // stateMachine.State(GameState.Countdown)               .OnEnter += () => OnEnterCountdown();
-    
-    stateMachine.State(GameState.Done)                    .OnEnter += () => OnEnterDone("Thank you for playing!\n\n Please take off the headset.");
-    stateMachine.State(GameState.Saving)                  .OnEnter += () => OnEnterSaving();
+    stateMachine.State(GameState.Ready)                   .OnEnter += () => OnEnterReady();
+    stateMachine.State(GameState.Countdown)               .OnEnter += () => OnEnterCountdown();
+    stateMachine.State(GameState.Play)                    .OnEnter += () => OnEnterPlay();
 
     // On Update
     stateMachine.State(GameState.Startup)                 .OnUpdate += () => stateMachine.GotoNextState(); // Allow one update so headset position is updated
-    // stateMachine.State(GameState.Countdown)               .OnUpdate += () => OnUpdateCountdown();
-    
-    stateMachine.State(GameState.PlayRandom)              .OnUpdate += () => OnUpdatePlay();
-    stateMachine.State(GameState.PlayEasy)                .OnUpdate += () => OnUpdatePlay();
-    stateMachine.State(GameState.PlayMedium)              .OnUpdate += () => OnUpdatePlay();
-    stateMachine.State(GameState.PlayHard)                .OnUpdate += () => OnUpdatePlay();
-    
-    stateMachine.State(GameState.Done)                    .OnUpdate += () => OnUpdateDone();
-    stateMachine.State(GameState.Saving)                  .OnUpdate += () => OnUpdateSaving();
+    stateMachine.State(GameState.Countdown)               .OnUpdate += () => OnUpdateCountdown();
+    stateMachine.State(GameState.Play)                    .OnUpdate += () => OnUpdatePlay();
     
     // On Exit
-    stateMachine.State(GameState.PlayRandom)              .OnExit += () => OnExitPlay();
-    stateMachine.State(GameState.PlayEasy)                .OnExit += () => OnExitPlay();
-    stateMachine.State(GameState.PlayMedium)              .OnExit += () => OnExitPlay();
-    stateMachine.State(GameState.PlayHard)                .OnExit += () => OnExitPlay();
-    
     stateMachine.State(GameState.Ready)                   .OnExit += () => OnExitReady();
-    // stateMachine.State(GameState.Countdown)               .OnExit += () => OnExitCountdown();
-
-    stateMachine.State(GameState.Done)                    .OnExit += () => OnExitDone();
+    stateMachine.State(GameState.Play)                    .OnExit += () => OnExitPlay();
   }
 
   void Awake()
@@ -159,6 +110,12 @@ public class SequenceManager : MonoBehaviour {
     // Ray line is enabled by default, and hammer is disabled
     _lineVisual.enabled = true;
     _hammer.SetActive(false);
+    
+    // Initialise play parameters
+    playParameters = new PlayParameters();
+    
+    // Don't show countdown text
+    countdownText.enabled = false;
   }
   
   void Start() {
@@ -188,55 +145,25 @@ public class SequenceManager : MonoBehaviour {
   
   void InitRun() {
     var uid = System.Guid.NewGuid().ToString();
-    // Debug.Log("Initializing new run with Run ID: " + uid);
-
-    Points = 0;
-    Round = 0;
-
     currentRunId = new RunIdentification();
     currentRunId.uuid = uid;
     currentRunId.startWallTime = System.DateTime.Now.ToString(Globals.Instance.timeFormat);
     currentRunId.startRealTime = Time.realtimeSinceStartup;
-  }
-
-  void SpawnFrontText(string text)
-  {
-    var newFrontText = Instantiate(
-      frontTextPrefab,
-      frontTextAnchor
-    );
-    _currentFrontText = newFrontText.GetComponent<FrontText>();
-    _currentFrontText.GetComponent<FrontText>().text.text = text;
-
-  }
-
-  public void HideFrontText()
-  {
-    if (FrontTextShrink != null) FrontTextShrink();
+    
+    // Hide target area
+    targetArea.gameObject.SetActive(false);
+    
+    // Show level chooser
+    levelChooser.SetActive(true);
   }
   
-  void OnEnterPlay(string difficulty) 
+  void OnEnterPlay() 
   {
-    // Hide the controller ray, show hammer
-    _lineVisual.enabled = false;
-    _hammer.SetActive(true);
-    
-    // Set play (difficulty) parameters
-    targetArea.SetLevel(difficulty);
-    
-    // Set also position of point screen (showing timer/score)
-    Vector3 pointScreenOffset = new Vector3(-0.5f, 0.0f, 2.5f);
-    pointScreen.SetPositionAndRotation(headset.position + pointScreenOffset, Quaternion.identity);
-
     // Increment round, start points from zero
-    Round = _round + 1;
     Points = 0;
     _punches = 0;
     _misses = 0;
     _roundStart = Time.time;
-    
-    // Show scoreboard
-    // ShowScoreboard(true);
   }
   
   void OnUpdatePlay() 
@@ -246,18 +173,9 @@ public class SequenceManager : MonoBehaviour {
     roundCounterText.text = (elapsed >= RoundLength ? 0 : RoundLength - elapsed).ToString("N1");
     
     // Check if time is up for this trial
-    // if (_punches+_misses >= MaxTargets)
     if (Time.time - _roundStart > RoundLength)
     {
-      // Check if game is finished
-      if (Round >= MaxRounds)
-      {
-        stateMachine.GotoState(GameState.Done);
-      }
-      else
-      {
         stateMachine.GotoState(GameState.Ready);
-      }
     }
     else
     {
@@ -268,31 +186,17 @@ public class SequenceManager : MonoBehaviour {
 
   void OnExitPlay()
   {
+    // Stop playing
     if (PlayStop != null) PlayStop();
-    // ShowScoreboard(false);
+    
+    // Hide target area
+    targetArea.gameObject.SetActive(false);
+    
+    // Show level chooser
+    levelChooser.SetActive(true);
   }
   
-  void OnEnterDone(string text)
-  {
-    SpawnFrontText(text);
-  }
-
-  void OnExitDone()
-  {
-    HideFrontText();
-  }
-  
-  void OnUpdateDone() 
-  {
-    stateMachine.GotoNextState();
-  }
-  
-  // void ShowScoreboard(bool show) 
-  // {
-  //   Globals.Instance.scoreboard.GetComponent<ScaleToggle>().Show(show);
-  // }
-  
-  void OnEnterReady(string mainText, string buttonText) 
+  void OnEnterReady() 
   {    
     // Hide hammer, show ray
     _lineVisual.enabled = true;
@@ -301,39 +205,52 @@ public class SequenceManager : MonoBehaviour {
   
   void OnExitReady() 
   {
+    // Display target area
+    targetArea.gameObject.SetActive(true);
+    
+    // Play parameters have been chosen, update them
+    targetArea.SetPlayParameters(playParameters);
+    
     // Set target area to correct position
     targetArea.SetPosition(headset);
+    
+    // Scale target area correctly
+    targetArea.SetScale();
+    
+    // Set also position of point screen (showing timer/score)
+    Vector3 pointScreenOffset = new Vector3(-0.5f, 0.0f, 2.5f);
+    pointScreen.SetPositionAndRotation(headset.position + pointScreenOffset, Quaternion.identity);
+    
+    // Hide the controller ray, show hammer
+    _lineVisual.enabled = false;
+    _hammer.SetActive(true);
+    
+    // Hide level chooser
+    levelChooser.SetActive(false);
   }
   
-  void OnEnterSaving() 
-  {
-    // Globals.Instance.sensorTracker.SaveData();
-    // Globals.Instance.SetLoadingState(true);
-    stateMachine.GotoNextState();
-  }
-
-  void OnUpdateSaving() 
-  {
-    // if (!Globals.Instance.sensorTracker.saveThreadRunning) 
-    // {
-      // stateMachine.GotoNextState();
-    // }
-  }
-
   void OnEnterCountdown()
   {
     _countdownStart = Time.time;
-    countdownText.text = "3";
+    countdownText.text = CountdownDuration.ToString();
     countdownText.enabled = true;
   }
   void OnUpdateCountdown()
   {
     float elapsed = CountdownDuration - (Time.time - _countdownStart);
-    countdownText.text = Math.Max(elapsed, 0).ToString("N1");
-  }
+    countdownText.text = Math.Max(elapsed, 1).ToString("N0");
 
-  void OnExitCountdown()
-  {
-    countdownText.enabled = false;
+    // Go to Play state after countdown reaches zero
+    if (elapsed <= 0)
+    {
+      countdownText.enabled = false;
+      stateMachine.GotoNextState();
+    }
+    // Hide after one
+    else if (elapsed <= 1 && countdownText.text != "Go!")
+    {
+      countdownText.text = "Go!";
+    }
+    
   }
 }
