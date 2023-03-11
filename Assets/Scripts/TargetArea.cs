@@ -1,12 +1,50 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class TargetArea : MonoBehaviour
 {
     public Target target;
+    public Bomb bomb;
     private float _spawnBan;
+    private float _bombSpawnBan;
     private PlayParameters _playParameters;
+    private int _objectID;
+    private UserInTheBox.Logger _logger;
+    private int _numTargets;
+    private int _numBombs;
+    private Dictionary<int, Tuple<Vector3, float>> objects;
 
+    public void Awake()
+    {
+        objects = new Dictionary<int, Tuple<Vector3, float>>();
+    }
+
+    public void Reset()
+    {
+        _numTargets = 0;
+        _numBombs = 0;
+        _objectID = 0;
+        objects.Clear();
+    }
+
+    public void RemoveBomb(int id)
+    {
+        objects.Remove(id);
+        _numBombs -= 1;
+    }
+
+    public void RemoveTarget(int id)
+    {
+        objects.Remove(id);
+        _numTargets -= 1;
+    }
+    
+    public void SetLogger(UserInTheBox.Logger logger)
+    {
+        _logger = logger;
+    }
     public void SetPlayParameters(PlayParameters playParameters)
     {
         _playParameters = playParameters;
@@ -26,17 +64,17 @@ public class TargetArea : MonoBehaviour
             _playParameters.targetAreaDepth
         );
     }
-
+    
     public bool SpawnTarget()
     {
         // Sample a new target after spawn ban has passed OR if there are no targets
         // if (Random.Range(0f, 1f) > _playParameters.SpawnProbability || transform.childCount >= _playParameters.MaxTargets+1)
-        if (transform.childCount >= _playParameters.maxTargets + 2)
+        if (_numTargets >= _playParameters.maxTargets)
         {
             return false;
         } 
         
-        if (Time.time > _spawnBan || transform.childCount <= 2)
+        if (Time.time > _spawnBan || _numTargets == 0 )
         {
             // Instantiate a new target
             Target newTarget = Instantiate(target, transform.position, transform.rotation, transform);
@@ -49,11 +87,69 @@ public class TargetArea : MonoBehaviour
             newTarget.Position = SamplePosition(newTarget.Size);
             newTarget.LifeSpan = SampleLifeSpan();
 
-            newTarget.Initialised = true;
+            // Increase number of targets
+            _numTargets += 1;
             
+            // Set ID and increment counter
+            newTarget.ID = _objectID;
+            _objectID += 1;
+            
+            // Add to objects
+            objects.Add(newTarget.ID, new Tuple<Vector3, float>(newTarget.Position, newTarget.Size));
+
+            if (_logger.Active)
+            {
+                // Log the event
+                _logger.PushWithTimestamp("events", "spawn_target, " + newTarget.ID + ", "
+                                                    + newTarget.PositionToString());
+            }
+
             return true;
         }
 
+        return false;
+    }
+
+    public bool spawnBomb()
+    {
+        // Sample a new bomb after spawn ban has passed
+        if (_numBombs >= _playParameters.maxBombs)
+        {
+            return false;
+        } 
+        
+        if (Time.time > _bombSpawnBan)
+        {
+            // Instantiate a new target
+            Bomb newBomb = Instantiate(bomb, transform.position, transform.rotation, transform);
+
+            // Sample new spawn ban time
+            _bombSpawnBan = Time.time + SampleBombSpawnBan();
+
+            // Sample target location, size, life span
+            newBomb.Size = SampleSize();
+            newBomb.Position = SamplePosition(newBomb.Size);
+            newBomb.LifeSpan = SampleLifeSpan();
+
+            _numBombs += 1;
+            
+            // Set ID and increment counter
+            newBomb.ID = _objectID;
+            _objectID += 1;
+            
+            // Add to objects
+            objects.Add(newBomb.ID, new Tuple<Vector3, float>(newBomb.Position, newBomb.Size));
+
+            if (_logger.Active)
+            {
+                // Log the event
+                _logger.PushWithTimestamp("events", "spawn_bomb, " + newBomb.ID + ", " 
+                                                    + newBomb.PositionToString());
+            }
+
+            return true;
+        }
+        
         return false;
     }
 
@@ -72,17 +168,11 @@ public class TargetArea : MonoBehaviour
             pos = new Vector3(x, y, z);
             var good = true;
             
-            foreach (var t in gameObject.GetComponentsInChildren<Target>())
+            foreach (var objectInfo in objects.Values)
             {
-                // Skip the newly created target
-                if (!t.Initialised)
-                {
-                    continue;
-                }
-                
-                // If the suggested position overlaps with the position of another target, break and sample a new
+                // If the suggested position overlaps with the position of another object, break and sample a new
                 // position.
-                if (Vector3.Distance(t.Position, pos) < (t.Size+targetSize))
+                if (Vector3.Distance(objectInfo.Item1, pos) < (objectInfo.Item2+targetSize))
                 {
                     good = false;
                     break;
@@ -113,5 +203,10 @@ public class TargetArea : MonoBehaviour
     private float SampleSpawnBan()
     {
         return Random.Range(_playParameters.targetSpawnBan[0], _playParameters.targetSpawnBan[1]);
+    }
+
+    private float SampleBombSpawnBan()
+    {
+        return Random.Range(_playParameters.bombSpawnBan[0], _playParameters.bombSpawnBan[1]);
     }
 }

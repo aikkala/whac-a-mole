@@ -1,17 +1,17 @@
 using System;
 using UnityEngine;
 
-public enum TargetState {
+public enum BombState {
   FadeIn      = 0,
   Alive       = 1,
   FadeOut     = 2,
 }
 
-public class Target : MonoBehaviour
+public class Bomb : MonoBehaviour
 {
 
   // State Machine
-  public StateMachine<TargetState> stateMachine;
+  public StateMachine<BombState> stateMachine;
 
   // Punch velocity threshold
   private float punchVelocityThreshold = 0.6f;
@@ -19,7 +19,7 @@ public class Target : MonoBehaviour
   // ID
   public int ID { get; set; }
 
-  // Target position and size
+  // Bomb position and size
   public Vector3 Position
   {
     get => transform.localPosition;
@@ -40,7 +40,7 @@ public class Target : MonoBehaviour
     }
   }
 
-  // Target life span; calculate time-of-death when life span is set
+  // Bomb life span; calculate time-of-death when life span is set
   private float _lifeSpan;
   public float LifeSpan
   {
@@ -55,43 +55,39 @@ public class Target : MonoBehaviour
   // Spawn time and time-of-death
   private float _spawnTime, _tod;
   
-  // Color of target, changes based on how much time until tod
-  private Color _colorStart, _colorEnd;
+  // Color of bomb
+  private Color _color;
   private Material _material;
   
-  // Target fades in (wrt to size) when alive
+  // Bomb fades in (wrt to size) when alive
   private float _fadeInTime = 0.1f;
   
-  // Target fades away once dead
+  // Bomb fades away once dead
   private float _fadeOutTime = 0.2f;
 
   public virtual void Awake()
   {
 
     // If lookahead is enabled, initialise the targets in TargetState.LookAhead
-    stateMachine = new StateMachine<TargetState>(TargetState.FadeIn);
+    stateMachine = new StateMachine<BombState>(BombState.FadeIn);
 
-    stateMachine.AddTransition(TargetState.FadeIn,     TargetState.Alive);
-    stateMachine.AddTransition(TargetState.Alive,     TargetState.FadeOut);
+    stateMachine.AddTransition(BombState.FadeIn,    BombState.Alive);
+    stateMachine.AddTransition(BombState.Alive,     BombState.FadeOut);
 
-    stateMachine.State(TargetState.Alive)     .OnFixedUpdate += OnFixedUpdateAlive;
-    stateMachine.State(TargetState.Alive)     .OnUpdate      += OnUpdateAlive;
+    stateMachine.State(BombState.Alive)     .OnFixedUpdate += OnFixedUpdateAlive;
 
-    stateMachine.State(TargetState.FadeIn)    .OnUpdate      += OnUpdateFadeIn;
-    stateMachine.State(TargetState.FadeOut)   .OnUpdate      += OnUpdateFadeOut;
+    stateMachine.State(BombState.FadeIn)    .OnUpdate      += OnUpdateFadeIn;
+    stateMachine.State(BombState.FadeOut)   .OnUpdate      += OnUpdateFadeOut;
 
-    stateMachine.State(TargetState.FadeIn)    .OnExit        += OnExitFadeIn;
+    stateMachine.State(BombState.FadeIn)    .OnExit        += OnExitFadeIn;
 
-    Globals.Instance.sequenceManager          .PlayStop      += DestroyTarget;
+    Globals.Instance.sequenceManager        .PlayStop      += DestroyBomb;
     
     // Get spawn time
     _spawnTime = Time.fixedTime;
     
-    // Color changes from green to red depending on how much lifespan is left
-    _colorStart = Color.green;
-    _colorEnd = Color.red;
     _material = gameObject.GetComponentInChildren<MeshRenderer>().material;
-    _material.color = _colorStart;
+    _material.color = Color.black;
   }
   
   void Update() {
@@ -103,8 +99,8 @@ public class Target : MonoBehaviour
     stateMachine.CurrentState().InvokeOnFixedUpdate();
   }
   
-  void DestroyTarget() {
-    Globals.Instance.sequenceManager.PlayStop -= DestroyTarget;
+  void DestroyBomb() {
+    Globals.Instance.sequenceManager.PlayStop -= DestroyBomb;
     Destroy(gameObject);
   }
 
@@ -113,9 +109,8 @@ public class Target : MonoBehaviour
     // If time has expired, move to FadeOut
     if (Time.fixedTime >= _tod)
     {
-      _material.color = Color.black;
-      Globals.Instance.sequenceManager.RecordMiss(ID, PositionToString());
-      stateMachine.GotoState(TargetState.FadeOut);
+      Globals.Instance.sequenceManager.RecordBombDisarm(ID, PositionToString());
+      stateMachine.GotoState(BombState.FadeOut);
     }
   }
 
@@ -132,7 +127,7 @@ public class Target : MonoBehaviour
     else
     {
       // Move to Alive state
-      stateMachine.GotoState(TargetState.Alive);
+      stateMachine.GotoState(BombState.Alive);
     }
   }
 
@@ -141,16 +136,10 @@ public class Target : MonoBehaviour
     // Make sure size is correct
     transform.localScale = _originalScale * Vector3.one;
   }
-
-  void OnUpdateAlive()
-  {
-    // Change color according to how much time this target as left; color ranges from green to red
-    _material.color = Color.Lerp(_colorStart, _colorEnd, (Time.time - (_spawnTime+_fadeInTime)) / _lifeSpan);
-  }
   
   void OnUpdateFadeOut()
   {
-    // The target fades away (quickly)
+    // The bomb fades away (quickly)
     var elapsed = Time.time - _tod;
     if (elapsed <= _fadeOutTime)
     {
@@ -161,14 +150,14 @@ public class Target : MonoBehaviour
     else
     {
       // After fading away, destroy target
-      DestroyTarget();
+      DestroyBomb();
     }
   }
   
   private void OnTriggerEnter(Collider other) {
     
-    // Target can be hit only when it is Alive
-    if (stateMachine.currentState != TargetState.Alive)
+    // Bomb can be hit only when it is Alive
+    if (stateMachine.currentState != BombState.Alive)
     {
       return;
     }
@@ -183,15 +172,12 @@ public class Target : MonoBehaviour
   
     // Update time-of-death
     _tod = Time.fixedTime;
-      
-    // Change target color to blue to indicate it has been punched
-    _material.color = Color.blue;
-  
+    
     // Record punch
-    Globals.Instance.sequenceManager.RecordPunch(ID, PositionToString());
+    Globals.Instance.sequenceManager.RecordBombDetonation(ID, PositionToString());
     
     // Move to FadeOut
-    stateMachine.GotoState(TargetState.FadeOut);
+    stateMachine.GotoState(BombState.FadeOut);
   }
   
   public string PositionToString()

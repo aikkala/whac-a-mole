@@ -3,6 +3,7 @@ using TMPro;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UserInTheBox;
 
 public enum GameState {
   Startup        = 0,
@@ -38,7 +39,7 @@ public class SequenceManager : MonoBehaviour {
   
   // Needed for countdown
   private float _countdownStart;
-  private const float CountdownDuration = 3;
+  private const float CountdownDuration = 4;
   public TextMeshPro countdownText;
   
   // Keep score of points
@@ -49,7 +50,6 @@ public class SequenceManager : MonoBehaviour {
     private set
     {
       _points = value;
-      pointCounterText.text = _points.ToString();
     }
   }
 
@@ -64,8 +64,14 @@ public class SequenceManager : MonoBehaviour {
   private const float RoundLength = 10;
   private float _roundStart;
   
+  // Boolean to indicate whether episode should be terminated
+  private bool _terminate;
+  
   // Play parameters
   public PlayParameters playParameters;
+  
+  // Logger
+  public UserInTheBox.Logger logger;
   
   // Target area where targets are spawned
   public TargetArea targetArea;
@@ -111,9 +117,12 @@ public class SequenceManager : MonoBehaviour {
     _lineVisual.enabled = true;
     _hammer.SetActive(false);
     
+    // Initialise logger
+    logger = new UserInTheBox.Logger();
+    
     // Initialise play parameters
     playParameters = new PlayParameters();
-    
+
     // Don't show countdown text
     countdownText.enabled = false;
   }
@@ -133,22 +142,56 @@ public class SequenceManager : MonoBehaviour {
     stateMachine.CurrentState().InvokeOnUpdate();
   }
   
-  public void RecordPunch() {
+  public void RecordPunch(int targetID, string targetPositionStr) {
     Points = _points + PunchValue;
     _punches += 1;
+    pointCounterText.text = _points.ToString();
+    targetArea.RemoveTarget(targetID);
+    if (logger.Active)
+    {
+      logger.PushWithTimestamp("events", "target_hit, " + targetID + ", " + targetPositionStr);
+    }
   }
 
-  public void RecordMiss()
+  public void RecordMiss(int targetID, string targetPositionStr)
   {
     _misses += 1;
+    targetArea.RemoveTarget(targetID);
+    if (logger.Active)
+    {
+      logger.PushWithTimestamp("events", "target_miss, " + targetID + ", " + targetPositionStr);
+    }
   }
   
+  public void RecordBombDetonation(int bombID, string bombPositionStr) {
+    if (logger.Active)
+    {
+      logger.PushWithTimestamp("events", "bomb_detonate, " + bombID + ", " + bombPositionStr);
+    }
+    _terminate = true;
+    targetArea.RemoveBomb(bombID);
+  }
+
+  public void RecordBombDisarm(int bombID, string bombPositionStr)
+  {
+    if (logger.Active)
+    {
+      logger.PushWithTimestamp("events", "bomb_disarm, " + bombID + ", " + bombPositionStr);
+    }
+    targetArea.RemoveBomb(bombID);
+  }
+
+  
   void InitRun() {
+    // I don't think these are used for anything
     var uid = System.Guid.NewGuid().ToString();
     currentRunId = new RunIdentification();
     currentRunId.uuid = uid;
     currentRunId.startWallTime = System.DateTime.Now.ToString(Globals.Instance.timeFormat);
     currentRunId.startRealTime = Time.realtimeSinceStartup;
+    
+    // Set logger to target area so we can log when new targets are spawned
+    targetArea.SetLogger(logger);
     
     // Hide target area
     targetArea.gameObject.SetActive(false);
@@ -164,6 +207,25 @@ public class SequenceManager : MonoBehaviour {
     _punches = 0;
     _misses = 0;
     _roundStart = Time.time;
+    _terminate = false;
+    
+    // Reset target id counter
+    targetArea.Reset();
+
+    // Initialise log files
+    if (logger.Active)
+    {
+      logger.Initialise("states");
+      logger.Initialise("events");
+      
+      // Write random seed, target area position and orientation
+      logger.Push("states", "level " + playParameters.currentLevel + ", random seed " + playParameters.randomSeed
+                            + ", target area transform " + UitBUtils.TransformToString(targetArea.transform));
+      
+      // Write headers
+      logger.Push("states", UitBUtils.GetStateHeader());
+      logger.Push("events", "timestamp, type, target_id, target_pos_x, target_pos_y, target_pos_z");
+    }
   }
   
   void OnUpdatePlay() 
@@ -171,16 +233,26 @@ public class SequenceManager : MonoBehaviour {
     // Update timer
     float elapsed = Time.time - _roundStart;
     roundCounterText.text = (elapsed >= RoundLength ? 0 : RoundLength - elapsed).ToString("N1");
-    
-    // Check if time is up for this trial
-    if (Time.time - _roundStart > RoundLength)
+
+    // Update point counter text
+    // pointCounterText.text = (100*_punches / (_punches + _misses)).ToString("N0") + " %";
+
+    if (logger.Active)
+    {
+      // Log position
+      logger.PushWithTimestamp("states", UitBUtils.GetStateString(Globals.Instance.simulatedUser));
+    }
+
+    // Check if time is up for this trial; or if we should terminate for other reasons
+    if ((Time.time - _roundStart > RoundLength) || _terminate)
     {
         stateMachine.GotoState(GameState.Ready);
     }
     else
     {
-      // Continue play; potentially spawn a new target
+      // Continue play; potentially spawn a new target and/or a new bomb
       targetArea.SpawnTarget();
+      targetArea.spawnBomb();
     }
   }
 
@@ -188,14 +260,21 @@ public class SequenceManager : MonoBehaviour {
   {
     // Stop playing
     if (PlayStop != null) PlayStop();
-    
+
     // Hide target area
     targetArea.gameObject.SetActive(false);
-    
+
     // Show level chooser
     levelChooser.SetActive(true);
+
+    if (logger.Active)
+    {
+      // Stop logging
+      logger.Finalise("states");
+      logger.Finalise("events");
+    }
   }
-  
+
   void OnEnterReady() 
   {    
     // Hide hammer, show ray
@@ -211,7 +290,10 @@ public class SequenceManager : MonoBehaviour {
     // Play parameters have been chosen, update them
     targetArea.SetPlayParameters(playParameters);
     
-    // Set target area to correct position
+    // Enable logger if not training
+    logger.Active = !playParameters.isCurrentTraining;
+
+      // Set target area to correct position
     targetArea.SetPosition(headset);
     
     // Scale target area correctly
@@ -232,7 +314,7 @@ public class SequenceManager : MonoBehaviour {
   void OnEnterCountdown()
   {
     _countdownStart = Time.time;
-    countdownText.text = CountdownDuration.ToString();
+    countdownText.text = (CountdownDuration-1).ToString();
     countdownText.enabled = true;
   }
   void OnUpdateCountdown()

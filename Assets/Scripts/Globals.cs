@@ -4,7 +4,7 @@ using UserInTheBox;
 
 
 public class Globals : Singleton<Globals> {
-  public string timeFormat = "yyyy-MM-ddTHH:mm:ss";
+  public string timeFormat = "yyyy-MM-ddTHH-mm-ss";
   
   [Space(10)]
   
