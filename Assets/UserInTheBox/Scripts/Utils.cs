@@ -37,6 +37,22 @@ namespace UserInTheBox
             return false;
         }
 
+        public static string GetStateString(SimulatedUser simulatedUser)
+        {
+            return TransformToString(simulatedUser.leftHandController.transform) + ", " +
+                   TransformToString(simulatedUser.rightHandController.transform) + ", " +
+                   TransformToString(simulatedUser.mainCamera.transform);
+
+        }
+
+        public static string GetStateHeader()
+        {
+            return "timestamp, " +
+                   "left_pos_x, left_pos_y, left_pos_z, left_quat_x, left_quat_y, left_quat_z, left_quat_w, " +
+                   "right_pos_x, right_pos_y, right_pos_z, right_quat_x, right_quat_y, right_quat_z, right_quat_w, " +
+                   "head_pos_x, head_pos_y, head_pos_z, head_quat_x, head_quat_y, head_quat_z, head_quat_w";
+        }
+        
         public static string TransformToString(Transform transform)
         {
             return Vector3ToString(transform.position) + ", " + QuaternionToString(transform.rotation);
@@ -44,7 +60,7 @@ namespace UserInTheBox
 
         public static string Vector3ToString(Vector3 vec)
         {
-            return vec.x + "," + vec.y + "," + vec.z;
+            return vec.x + ", " + vec.y + ", " + vec.z;
         }
 
         public static string QuaternionToString(Quaternion quat)
