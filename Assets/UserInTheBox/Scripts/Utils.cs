@@ -53,19 +53,20 @@ namespace UserInTheBox
                    "head_pos_x, head_pos_y, head_pos_z, head_quat_x, head_quat_y, head_quat_z, head_quat_w";
         }
         
-        public static string TransformToString(Transform transform)
+        public static string TransformToString(Transform transform, string delimiter=", ")
         {
-            return Vector3ToString(transform.position) + ", " + QuaternionToString(transform.rotation);
+            return Vector3ToString(transform.position, delimiter) + delimiter + 
+                   QuaternionToString(transform.rotation, delimiter);
         }
 
-        public static string Vector3ToString(Vector3 vec)
+        public static string Vector3ToString(Vector3 vec, string delimiter=", ")
         {
-            return vec.x + ", " + vec.y + ", " + vec.z;
+            return vec.x + delimiter + vec.y + delimiter + vec.z;
         }
 
-        public static string QuaternionToString(Quaternion quat)
+        public static string QuaternionToString(Quaternion quat, string delimiter)
         {
-            return quat.x + ", " + quat.y + ", " + quat.z + ", " + quat.w;
+            return quat.x + delimiter + quat.y + delimiter + quat.z + delimiter + quat.w;
         }
     }
 }

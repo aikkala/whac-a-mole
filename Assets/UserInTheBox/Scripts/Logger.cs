@@ -6,10 +6,8 @@ namespace UserInTheBox
 {
     public class Logger
     {
-        // public SimulatedUser simulatedUser;
         private Dictionary<string, StreamWriter> _files;
         private string _baseLogFolder;
-        // private bool _debug = false;
         public bool Active { get; set; }
 
 
@@ -27,47 +25,6 @@ namespace UserInTheBox
             // By default logger is not active
             Active = false;
         }
-
-        // private void Awake()
-        // {
-        //     if (_debug)
-        //     {
-        //         enabled = true;
-        //         _baseLogFolder = "output/logging/";
-        //     }
-        //     else
-        //     {
-        //         enabled = UitBUtils.GetOptionalArgument("logging");
-        //     }
-        //
-        //     if (enabled)
-        //     {
-        //         if (enabled && !_debug)
-        //         {
-        //             if (simulatedUser.enabled)
-        //             {
-        //                 _baseLogFolder = Path.Combine(UitBUtils.GetKeywordArgument("outputFolder"), "logging/");
-        //             }
-        //             else
-        //             {
-        //                 _baseLogFolder = Path.Combine(Application.persistentDataPath, "logging/");
-        //             }
-        //         }
-        //         Debug.Log("Logging is enabled");
-        //         Debug.Log("Logs will be saved to " + _baseLogFolder);
-        //     }
-        //     else
-        //     {
-        //         gameObject.SetActive(false);
-        //     }
-        //
-        // }
-
-        // void Start()
-        // {
-        //     // Create the output directory
-        //     Directory.CreateDirectory(_baseLogFolder);
-        // }
 
         public void Initialise(string key)
         {
@@ -122,16 +79,5 @@ namespace UserInTheBox
         {
             Push(key, Time.time + ", " + msg);
         }
-
-        // private void OnDestroy()
-        // {
-        //     if (enabled)
-        //     {
-        //         foreach (var key in _files.Keys)
-        //         {
-        //             Finalise(key);
-        //         }
-        //     }
-        // }
     }
 }

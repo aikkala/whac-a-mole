@@ -26,7 +26,7 @@ public class Recorder : MonoBehaviour
         if (_debug)
         {
             enabled = true;
-            _baseImageFolder = "output/recording/";
+            _baseImageFolder = Path.Combine(Application.persistentDataPath, "recording/");
             _resolution = "1280x960";
         }
         else

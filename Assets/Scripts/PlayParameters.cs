@@ -38,7 +38,7 @@ public class PlayParameters {
     // targetAreaRotation = new Quaternion(-0.3826834f, 0, 0, 0.9238795f);
   }
   
-  public void SetLevel(string level, bool isTraining) {
+  public void SetLevel(string level, bool isTraining, int fixedSeed=0) {
     
     targetLifeSpan = new Vector2(2.0f, 2.0f);
     targetSize = new Vector2(0.025f, 0.025f);
@@ -51,19 +51,19 @@ public class PlayParameters {
     {
       maxTargets = 1;
       maxBombs = 1;
-      randomSeed = 111;
+      randomSeed = fixedSeed == 0 ? 111 : fixedSeed;
     }
     else if (level == "medium")
     {
       maxTargets = 3;
       maxBombs = 1;
-      randomSeed = 333;
+      randomSeed = fixedSeed == 0 ? 333 : fixedSeed;
     }
     else if (level == "hard")
     {
       maxTargets = 3;
       maxBombs = 3;
-      randomSeed = 555;
+      randomSeed = fixedSeed == 0 ? 555 : fixedSeed;
     }
     else if (level == "random")
     {
@@ -77,11 +77,11 @@ public class PlayParameters {
       throw new NotImplementedException("Play parameters not defined for level " + level);
     }
     
-    // If not in training mode, set random seed
-    if (!isTraining)
+    // If in training mode, sample a random seed
+    if (isTraining)
     {
       randomSeed = Random.Range(0, 1000000);
-      Random.InitState(randomSeed);
     }
+    Random.InitState(randomSeed);
   }
 }

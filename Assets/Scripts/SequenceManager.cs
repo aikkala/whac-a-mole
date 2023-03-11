@@ -1,4 +1,5 @@
 ﻿using System;
+using CsvHelper.Configuration.Attributes;
 using TMPro;
 using Unity.XR.CoreUtils;
 using UnityEngine;
@@ -125,9 +126,7 @@ public class SequenceManager : MonoBehaviour {
 
     // Don't show countdown text
     countdownText.enabled = false;
-  }
-  
-  void Start() {
+
     // Initialise state machine
     InitStateMachine();
     stateMachine.State(stateMachine.currentState).InvokeOnEnter();
@@ -211,21 +210,7 @@ public class SequenceManager : MonoBehaviour {
     
     // Reset target id counter
     targetArea.Reset();
-
-    // Initialise log files
-    if (logger.Active)
-    {
-      logger.Initialise("states");
-      logger.Initialise("events");
-      
-      // Write random seed, target area position and orientation
-      logger.Push("states", "level " + playParameters.currentLevel + ", random seed " + playParameters.randomSeed
-                            + ", target area transform " + UitBUtils.TransformToString(targetArea.transform));
-      
-      // Write headers
-      logger.Push("states", UitBUtils.GetStateHeader());
-      logger.Push("events", "timestamp, type, target_id, target_pos_x, target_pos_y, target_pos_z");
-    }
+    
   }
   
   void OnUpdatePlay() 
@@ -292,8 +277,8 @@ public class SequenceManager : MonoBehaviour {
     
     // Enable logger if not training
     logger.Active = !playParameters.isCurrentTraining;
-
-      // Set target area to correct position
+    
+    // Set target area to correct position
     targetArea.SetPosition(headset);
     
     // Scale target area correctly
@@ -309,6 +294,25 @@ public class SequenceManager : MonoBehaviour {
     
     // Hide level chooser
     levelChooser.SetActive(false);
+    
+    // Initialise log files
+    if (logger.Active)
+    {
+      logger.Initialise("states");
+      logger.Initialise("events");
+      
+      // Write level and random seed
+      logger.Push("states", "level " + playParameters.currentLevel + 
+                            ", random seed " + playParameters.randomSeed);
+      
+      // Write headers
+      logger.Push("states", UitBUtils.GetStateHeader());
+      logger.Push("events", "timestamp, type, target_id, target_pos_x, target_pos_y, target_pos_z");
+      
+      // Do first logging here, so we get correctly positioned controllers/headset when game begins
+      logger.PushWithTimestamp("states", UitBUtils.GetStateString(Globals.Instance.simulatedUser));
+    }
+
   }
   
   void OnEnterCountdown()
@@ -333,6 +337,20 @@ public class SequenceManager : MonoBehaviour {
     {
       countdownText.text = "Go!";
     }
+  }
+
+  public void SetLevel(string level, int randomSeed)
+  {
+    playParameters.SetLevel(level, false, randomSeed);
     
+    // Visit Ready state, as some important stuff will be set (on exit)
+    stateMachine.GotoState(GameState.Ready);
+    
+    // Make sure target area is correctly set (would be set after exiting GameState.Ready, but controllers/headset 
+    // pos/rot might not be set yet
+
+    // Start playing
+    stateMachine.GotoState(GameState.Play);
+
   }
 }
