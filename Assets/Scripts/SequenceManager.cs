@@ -1,5 +1,4 @@
 ﻿using System;
-using CsvHelper.Configuration.Attributes;
 using TMPro;
 using Unity.XR.CoreUtils;
 using UnityEngine;
@@ -62,7 +61,7 @@ public class SequenceManager : MonoBehaviour {
   private int _misses;
   
   // Set length of round (in seconds)
-  private const float RoundLength = 10;
+  private const float RoundLength = 30;
   private float _roundStart;
   
   // Boolean to indicate whether episode should be terminated
@@ -114,9 +113,9 @@ public class SequenceManager : MonoBehaviour {
     _lineVisual = rightController.GetComponent<XRInteractorLineVisual>();
     _hammer = rightController.GetNamedChild("Hammer");
 
-    // Ray line is enabled by default, and hammer is disabled
+    // Ray line is enabled by default, as is hammer
     _lineVisual.enabled = true;
-    _hammer.SetActive(false);
+    _hammer.SetActive(true);
     
     // Initialise logger
     logger = new UserInTheBox.Logger();
@@ -144,7 +143,7 @@ public class SequenceManager : MonoBehaviour {
   public void RecordPunch(int targetID, string targetPositionStr) {
     Points = _points + PunchValue;
     _punches += 1;
-    pointCounterText.text = _points.ToString();
+    // pointCounterText.text = _points.ToString();
     targetArea.RemoveTarget(targetID);
     if (logger.Active)
     {
@@ -220,7 +219,7 @@ public class SequenceManager : MonoBehaviour {
     roundCounterText.text = (elapsed >= RoundLength ? 0 : RoundLength - elapsed).ToString("N1");
 
     // Update point counter text
-    // pointCounterText.text = (100*_punches / (_punches + _misses)).ToString("N0") + " %";
+    pointCounterText.text = (100*_punches / (_punches + _misses)).ToString("N0") + " %";
 
     if (logger.Active)
     {
@@ -264,7 +263,7 @@ public class SequenceManager : MonoBehaviour {
   {    
     // Hide hammer, show ray
     _lineVisual.enabled = true;
-    _hammer.SetActive(false);
+    // _hammer.SetActive(false);
   }
   
   void OnExitReady() 
@@ -290,7 +289,7 @@ public class SequenceManager : MonoBehaviour {
     
     // Hide the controller ray, show hammer
     _lineVisual.enabled = false;
-    _hammer.SetActive(true);
+    // _hammer.SetActive(true);
     
     // Hide level chooser
     levelChooser.SetActive(false);
@@ -346,9 +345,6 @@ public class SequenceManager : MonoBehaviour {
     // Visit Ready state, as some important stuff will be set (on exit)
     stateMachine.GotoState(GameState.Ready);
     
-    // Make sure target area is correctly set (would be set after exiting GameState.Ready, but controllers/headset 
-    // pos/rot might not be set yet
-
     // Start playing
     stateMachine.GotoState(GameState.Play);
 
