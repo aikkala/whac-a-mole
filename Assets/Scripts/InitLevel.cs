@@ -9,15 +9,12 @@ public class InitLevel : MonoBehaviour
     void Start()
     {
         Button btn = gameObject.GetComponent<Button>();
-        btn.onClick.AddListener(StartPlay);
+        btn.onClick.AddListener(SetLevel);
     }
 
-    void StartPlay()
+    void SetLevel()
     {
         // Set play parameters
         Globals.Instance.sequenceManager.playParameters.SetLevel(level, isTraining);
-        
-        // Start playing
-        Globals.Instance.sequenceManager.stateMachine.GotoState(GameState.Countdown);
     }
 }

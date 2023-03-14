@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -17,10 +16,6 @@ public class PlayParameters {
   public bool isCurrentTraining;
 
   // Target area parameters
-  // public Vector3 TargetAreaPosition => new Vector3(0.1f, -0.2f, 0.4f); 
-  // public Quaternion TargetAreaRotation => new Quaternion(0.3826834f, 0, 0, 0.9238795f);
-  // public Vector3 TargetAreaPosition => new Vector3(0.1f, -0.1f, 0.4f); 
-  // public Quaternion TargetAreaRotation => new Quaternion(0, 0, 0, 1);
   public Vector3 targetAreaPosition;
   public Quaternion targetAreaRotation;
   public float targetAreaHeight, targetAreaWidth, targetAreaDepth;
@@ -31,11 +26,6 @@ public class PlayParameters {
     targetAreaHeight = 0.3f;
     targetAreaWidth = 0.3f;
     targetAreaDepth = 0.001f;
-
-    targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
-    targetAreaRotation = Quaternion.identity;
-    // targetAreaPosition = new Vector3(0.1f, 0.2f, 0.3f);
-    // targetAreaRotation = new Quaternion(-0.3826834f, 0, 0, 0.9238795f);
   }
   
   public void SetLevel(string level, bool isTraining, int fixedSeed=0) {
@@ -50,27 +40,34 @@ public class PlayParameters {
     if (level == "easy")
     {
       maxTargets = 1;
-      maxBombs = 1;
-      randomSeed = fixedSeed == 0 ? 111 : fixedSeed;
+      maxBombs = 0;
+      // randomSeed = fixedSeed == 0 ? 111 : fixedSeed;
+      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaRotation = Quaternion.identity;
     }
     else if (level == "medium")
     {
       maxTargets = 3;
-      maxBombs = 1;
-      randomSeed = fixedSeed == 0 ? 333 : fixedSeed;
+      maxBombs = 0;
+      // randomSeed = fixedSeed == 0 ? 333 : fixedSeed;
+      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaRotation = Quaternion.identity;
     }
     else if (level == "hard")
     {
-      maxTargets = 3;
-      maxBombs = 3;
-      randomSeed = fixedSeed == 0 ? 555 : fixedSeed;
+      maxTargets = 5;
+      maxBombs = 0;
+      // randomSeed = fixedSeed == 0 ? 555 : fixedSeed;
+      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaRotation = Quaternion.identity;
     }
-    else if (level == "random")
+    else if (level == "up")
     {
-      // Choose max number of targets randomly from a set of 1, 3, 5
-      List<int> numTargets = new List<int> { 1, 3, 5 };
-      int randomIndex = Random.Range(0, numTargets.Count);
-      maxTargets = numTargets[randomIndex];
+      maxTargets = 3;
+      maxBombs = 0;
+      // randomSeed = fixedSeed == 0 ? 555 : fixedSeed;
+      targetAreaPosition = new Vector3(0.1f, 0.2f, 0.3f);
+      targetAreaRotation = new Quaternion(-0.3826834f, 0, 0, 0.9238795f);
     }
     else
     {
@@ -78,10 +75,10 @@ public class PlayParameters {
     }
     
     // If in training mode, sample a random seed
-    if (isTraining)
-    {
-      randomSeed = Random.Range(0, 1000000);
-    }
+    // if (isTraining)
+    // {
+    randomSeed = fixedSeed == 0 ? Random.Range(0, 1000000) : fixedSeed;
+    // }
     Random.InitState(randomSeed);
   }
 }

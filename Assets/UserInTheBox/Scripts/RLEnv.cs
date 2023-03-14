@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 
 namespace UserInTheBox
@@ -45,7 +44,7 @@ namespace UserInTheBox
                 if (target.stateMachine.currentState == TargetState.Alive)
                 {
                     var dist = Vector3.Distance(target.transform.position, _marker.position);
-                    _reward += (float)(Math.Exp(-10*dist) - 1) / 10;
+                    _reward += (float)(Math.Exp(-10*dist)-1) / 10;
                 }
             }
         }
@@ -63,7 +62,7 @@ namespace UserInTheBox
         public void Reset()
         {
             // Set play level
-            sequenceManager.playParameters.SetLevel("medium", true);
+            sequenceManager.playParameters.SetLevel("easy", true);
             
             // Visit Ready state, as some important stuff will be set (on exit)
             sequenceManager.stateMachine.GotoState(GameState.Ready);

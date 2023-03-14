@@ -26,7 +26,7 @@ public class SequenceManager : MonoBehaviour {
   private GameObject _hammer;
   
   // Set some info texts
-  public Transform pointScreen;
+  public Transform scoreBoard;
   public TextMeshPro pointCounterText;
   public TextMeshPro roundCounterText;
   public event System.Action PlayStop;
@@ -140,24 +140,24 @@ public class SequenceManager : MonoBehaviour {
     stateMachine.CurrentState().InvokeOnUpdate();
   }
   
-  public void RecordPunch(int targetID, string targetPositionStr) {
+  public void RecordPunch(Target target) {
     Points = _points + PunchValue;
     _punches += 1;
     // pointCounterText.text = _points.ToString();
-    targetArea.RemoveTarget(targetID);
+    targetArea.RemoveTarget(target);
     if (logger.Active)
     {
-      logger.PushWithTimestamp("events", "target_hit, " + targetID + ", " + targetPositionStr);
+      logger.PushWithTimestamp("events", "target_hit, " + target.ID + ", " + target.PositionToString());
     }
   }
 
-  public void RecordMiss(int targetID, string targetPositionStr)
+  public void RecordMiss(Target target)
   {
     _misses += 1;
-    targetArea.RemoveTarget(targetID);
+    targetArea.RemoveTarget(target);
     if (logger.Active)
     {
-      logger.PushWithTimestamp("events", "target_miss, " + targetID + ", " + targetPositionStr);
+      logger.PushWithTimestamp("events", "target_miss, " + target.ID + ", " + target.PositionToString());
     }
   }
   
@@ -210,16 +210,25 @@ public class SequenceManager : MonoBehaviour {
     // Reset target id counter
     targetArea.Reset();
     
+    // Update scoreboard
+    UpdateScoreboard();
   }
-  
-  void OnUpdatePlay() 
+
+  void UpdateScoreboard()
   {
     // Update timer
     float elapsed = Time.time - _roundStart;
     roundCounterText.text = (elapsed >= RoundLength ? 0 : RoundLength - elapsed).ToString("N1");
 
     // Update point counter text
-    pointCounterText.text = (100*_punches / (_punches + _misses)).ToString("N0") + " %";
+    float hitRate = _punches + _misses > 0 ? 100 * _punches / (_punches + _misses) : 0;
+    pointCounterText.text = hitRate.ToString("N0") + " %";
+  }
+  
+  void OnUpdatePlay() 
+  {
+    // Update scoreboard (timer and point / hit rate counter)
+    UpdateScoreboard();
 
     if (logger.Active)
     {
@@ -253,6 +262,9 @@ public class SequenceManager : MonoBehaviour {
 
     if (logger.Active)
     {
+      // Log stats
+      logger.PushWithTimestamp("events", "hits: " + _punches + ", misses: " + _misses);
+      
       // Stop logging
       logger.Finalise("states");
       logger.Finalise("events");
@@ -284,8 +296,8 @@ public class SequenceManager : MonoBehaviour {
     targetArea.SetScale();
     
     // Set also position of point screen (showing timer/score)
-    Vector3 pointScreenOffset = new Vector3(-0.5f, 0.0f, 2.5f);
-    pointScreen.SetPositionAndRotation(headset.position + pointScreenOffset, Quaternion.identity);
+    Vector3 scoreBoardOffset = new Vector3(-playParameters.targetAreaWidth, 0.0f, 0.0f);
+    scoreBoard.SetPositionAndRotation(targetArea.transform.position + scoreBoardOffset, Quaternion.identity);
     
     // Hide the controller ray, show hammer
     _lineVisual.enabled = false;

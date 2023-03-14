@@ -114,7 +114,7 @@ public class Target : MonoBehaviour
     if (Time.fixedTime >= _tod)
     {
       _material.color = Color.black;
-      Globals.Instance.sequenceManager.RecordMiss(ID, PositionToString());
+      Globals.Instance.sequenceManager.RecordMiss(this);
       stateMachine.GotoState(TargetState.FadeOut);
     }
   }
@@ -188,7 +188,7 @@ public class Target : MonoBehaviour
     _material.color = Color.blue;
   
     // Record punch
-    Globals.Instance.sequenceManager.RecordPunch(ID, PositionToString());
+    Globals.Instance.sequenceManager.RecordPunch(this);
     
     // Move to FadeOut
     stateMachine.GotoState(TargetState.FadeOut);
