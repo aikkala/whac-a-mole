@@ -196,7 +196,8 @@ public class Target : MonoBehaviour
   
   public string PositionToString()
   {
-    return Position.x + ", " + Position.y + ", " + Position.z;
+    Vector3 pos = transform.position;
+    return pos.x + ", " + pos.y + ", " + pos.z;
   }
   
 }
