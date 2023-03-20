@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 
 public enum TargetState {
@@ -14,10 +15,16 @@ public class Target : MonoBehaviour
   public StateMachine<TargetState> stateMachine;
 
   // Punch velocity threshold
-  private float punchVelocityThreshold = 0.6f;
+  public Func<Vector3, bool> VelocityThreshold { get; set; }
 
+  // Points for hitting
+  public int points = 1;
+  
   // ID
   public int ID { get; set; }
+  
+  // Score text
+  private TextMeshProUGUI _scoreText;
 
   // Target position and size
   public Vector3 Position
@@ -63,12 +70,10 @@ public class Target : MonoBehaviour
   private float _fadeInTime = 0.1f;
   
   // Target fades away once dead
-  private float _fadeOutTime = 0.2f;
+  private float _fadeOutTime = 0.3f;
 
   public virtual void Awake()
   {
-
-    // If lookahead is enabled, initialise the targets in TargetState.LookAhead
     stateMachine = new StateMachine<TargetState>(TargetState.FadeIn);
 
     stateMachine.AddTransition(TargetState.FadeIn,     TargetState.Alive);
@@ -92,6 +97,10 @@ public class Target : MonoBehaviour
     _colorEnd = Color.red;
     _material = gameObject.GetComponentInChildren<MeshRenderer>().material;
     _material.color = _colorStart;
+    
+    // Score is not displayed initially
+    _scoreText = transform.Find("score_canvas/score_text").GetComponent<TextMeshProUGUI>();
+    _scoreText.enabled = false;
   }
   
   void Update() {
@@ -160,7 +169,8 @@ public class Target : MonoBehaviour
     }
     else
     {
-      // After fading away, destroy target
+      // After fading away, free up this position in the grid and destroy target
+      Globals.Instance.sequenceManager.targetArea.RemoveTarget(this);
       DestroyTarget();
     }
   }
@@ -175,8 +185,7 @@ public class Target : MonoBehaviour
     
     // Collision counts as a hit only if the relative velocity is high enough (punch is strong enough)
     Vector3 velocity = other.GetComponent<ObjectMovement>().Velocity;
-    // if (velocity.z < punchVelocityThreshold || velocity.y > -punchVelocityThreshold)
-    if (velocity.z < punchVelocityThreshold)
+    if (!VelocityThreshold(velocity))
     {
       return;
     }
@@ -185,7 +194,8 @@ public class Target : MonoBehaviour
     _tod = Time.fixedTime;
       
     // Change target color to blue to indicate it has been punched
-    _material.color = Color.blue;
+    // _material.color = Color.blue;
+    _scoreText.enabled = true;
   
     // Record punch
     Globals.Instance.sequenceManager.RecordPunch(this);

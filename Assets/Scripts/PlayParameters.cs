@@ -12,8 +12,11 @@ public class PlayParameters {
   public Vector2 targetSpawnBan;
   public Vector2 bombSpawnBan;
   public int randomSeed;
-  public string currentLevel;
   public bool isCurrentTraining;
+  public float roundLength;
+  public Func<Vector3, bool> velocityThreshold;
+  public string game = "difficulty";
+  public string level = "level1";
 
   // Target area parameters
   public Vector3 targetAreaPosition;
@@ -28,57 +31,94 @@ public class PlayParameters {
     targetAreaDepth = 0.001f;
   }
   
-  public void SetLevel(string level, bool isTraining, int fixedSeed=0) {
+  public void Initialise(bool isTraining, int fixedSeed=0) {
     
     targetLifeSpan = new Vector2(2.0f, 2.0f);
     targetSize = new Vector2(0.025f, 0.025f);
     targetSpawnBan = new Vector2(0.0f, 0.5f);
     bombSpawnBan = new Vector2(0.0f, 0.5f);
-    currentLevel = level;
     isCurrentTraining = isTraining;
+    roundLength = isTraining ? 10 : 60;
     
-    if (level == "easy")
-    {
-      maxTargets = 1;
-      maxBombs = 0;
-      // randomSeed = fixedSeed == 0 ? 111 : fixedSeed;
-      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
-      targetAreaRotation = Quaternion.identity;
-    }
-    else if (level == "medium")
+    if (game + "-" + level == "difficulty-level1")
     {
       maxTargets = 3;
       maxBombs = 0;
-      // randomSeed = fixedSeed == 0 ? 333 : fixedSeed;
       targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
+      velocityThreshold = velocity => velocity.z > 0.6f;
     }
-    else if (level == "hard")
+    else if (game + "-" + level == "difficulty-level2")
     {
-      maxTargets = 5;
-      maxBombs = 0;
-      // randomSeed = fixedSeed == 0 ? 555 : fixedSeed;
+      maxTargets = 3;
+      maxBombs = 1;
       targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
+      velocityThreshold = velocity => velocity.z > 0.6f;
     }
-    else if (level == "up")
+    else if (game + "-" + level == "difficulty-level3")
+    {
+      maxTargets = 3;
+      maxBombs = 3;
+      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaRotation = Quaternion.identity;
+      velocityThreshold = velocity => velocity.z > 0.6f;
+    }
+    else if (game + "-" + level == "effort-level1")
     {
       maxTargets = 3;
       maxBombs = 0;
-      // randomSeed = fixedSeed == 0 ? 555 : fixedSeed;
+      targetAreaPosition = new Vector3(0.1f, -0.3f, 0.35f);
+      targetAreaRotation = new Quaternion(0.3826834f, 0, 0, 0.9238795f);
+      velocityThreshold = velocity => velocity.y < -0.6f;
+    }
+    else if (game + "-" + level == "effort-level2")
+    {
+      maxTargets = 3;
+      maxBombs = 0;
+      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaRotation = Quaternion.identity;
+      velocityThreshold = velocity => velocity.z > 0.6f;
+    }
+    else if (game + "-" + level == "effort-level3")
+    {
+      maxTargets = 3;
+      maxBombs = 0;
       targetAreaPosition = new Vector3(0.1f, 0.2f, 0.3f);
       targetAreaRotation = new Quaternion(-0.3826834f, 0, 0, 0.9238795f);
+      velocityThreshold = velocity => velocity.z > 0.6f;
+    }
+    else if (game + "-" + level == "unconstrained-level1")
+    {
+      maxTargets = 3;
+      maxBombs = 0;
+      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaRotation = Quaternion.identity;
+      velocityThreshold = velocity => true;
+    }
+    else if (game + "-" + level == "unconstrained-level2")
+    {
+      maxTargets = 3;
+      maxBombs = 0;
+      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaRotation = Quaternion.identity;
+      velocityThreshold = velocity => true;
+    }
+    else if (game + "-" + level == "unconstrained-level3")
+    {
+      maxTargets = 3;
+      maxBombs = 0;
+      targetAreaPosition = new Vector3(0.1f, 0.2f, 0.3f);
+      targetAreaRotation = new Quaternion(-0.3826834f, 0, 0, 0.9238795f);
+      velocityThreshold = velocity => true;
     }
     else
     {
-      throw new NotImplementedException("Play parameters not defined for level " + level);
+      throw new NotImplementedException("Play parameters not defined for game " + game + " and level " + level);
     }
     
-    // If in training mode, sample a random seed
-    // if (isTraining)
-    // {
+    // Sample and set a random seed
     randomSeed = fixedSeed == 0 ? Random.Range(0, 1000000) : fixedSeed;
-    // }
     Random.InitState(randomSeed);
   }
 }

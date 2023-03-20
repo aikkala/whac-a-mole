@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 
 public enum BombState {
@@ -14,8 +15,11 @@ public class Bomb : MonoBehaviour
   public StateMachine<BombState> stateMachine;
 
   // Punch velocity threshold
-  private float punchVelocityThreshold = 0.6f;
+  public Func<Vector3, bool> VelocityThreshold { get; set; }
 
+  // Points for hitting
+  public int points = -10;
+  
   // ID
   public int ID { get; set; }
 
@@ -63,12 +67,13 @@ public class Bomb : MonoBehaviour
   private float _fadeInTime = 0.1f;
   
   // Bomb fades away once dead
-  private float _fadeOutTime = 0.2f;
+  private float _fadeOutTime = 0.3f;
+  
+  // Score text
+  private TextMeshProUGUI _scoreText;
 
   public virtual void Awake()
   {
-
-    // If lookahead is enabled, initialise the targets in TargetState.LookAhead
     stateMachine = new StateMachine<BombState>(BombState.FadeIn);
 
     stateMachine.AddTransition(BombState.FadeIn,    BombState.Alive);
@@ -88,6 +93,10 @@ public class Bomb : MonoBehaviour
     
     _material = gameObject.GetComponentInChildren<MeshRenderer>().material;
     _material.color = Color.black;
+    
+    // Score is not displayed initially
+    _scoreText = transform.Find("score_canvas/score_text").GetComponent<TextMeshProUGUI>();
+    _scoreText.enabled = false;
   }
   
   void Update() {
@@ -109,7 +118,7 @@ public class Bomb : MonoBehaviour
     // If time has expired, move to FadeOut
     if (Time.fixedTime >= _tod)
     {
-      Globals.Instance.sequenceManager.RecordBombDisarm(ID, PositionToString());
+      Globals.Instance.sequenceManager.RecordBombDisarm(this);
       stateMachine.GotoState(BombState.FadeOut);
     }
   }
@@ -149,7 +158,8 @@ public class Bomb : MonoBehaviour
     }
     else
     {
-      // After fading away, destroy target
+      // After fading away, free up this position in the grid and destroy target
+      Globals.Instance.sequenceManager.targetArea.RemoveBomb(this);
       DestroyBomb();
     }
   }
@@ -164,8 +174,7 @@ public class Bomb : MonoBehaviour
     
     // Collision counts as a hit only if the relative velocity is high enough (punch is strong enough)
     Vector3 velocity = other.GetComponent<ObjectMovement>().Velocity;
-    // if (velocity.z < punchVelocityThreshold || velocity.y > -punchVelocityThreshold)
-    if (velocity.z < punchVelocityThreshold)
+    if (!VelocityThreshold(velocity))
     {
       return;
     }
@@ -174,7 +183,10 @@ public class Bomb : MonoBehaviour
     _tod = Time.fixedTime;
     
     // Record punch
-    Globals.Instance.sequenceManager.RecordBombDetonation(ID, PositionToString());
+    Globals.Instance.sequenceManager.RecordBombDetonation(this);
+    
+    // Display score
+    _scoreText.enabled = true;
     
     // Move to FadeOut
     stateMachine.GotoState(BombState.FadeOut);

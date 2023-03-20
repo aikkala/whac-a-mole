@@ -119,11 +119,12 @@ public class Replayer : MonoBehaviour
     {
         // Do some parsing
         string[] values = info.Split(",");
-        string level = values[0].Split(" ")[1];
-        int randomSeed = int.Parse(values[1].Split(" ")[3]);
+        string game = values[0].Split(" ")[1];
+        string level = values[1].Split(" ")[2];
+        int randomSeed = int.Parse(values[2].Split(" ")[3]);
         
         // Initialise state
-        sequenceManager.SetLevel(level, randomSeed);
+        sequenceManager.SetLevel(game, level, randomSeed);
     }
 
     // Update is called once per frame

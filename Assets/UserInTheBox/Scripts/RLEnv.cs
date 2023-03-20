@@ -62,7 +62,9 @@ namespace UserInTheBox
         public void Reset()
         {
             // Set play level
-            sequenceManager.playParameters.SetLevel("easy", true);
+            sequenceManager.playParameters.game = "difficulty";
+            sequenceManager.playParameters.level = "level2";
+            sequenceManager.playParameters.Initialise(true);
             
             // Visit Ready state, as some important stuff will be set (on exit)
             sequenceManager.stateMachine.GotoState(GameState.Ready);

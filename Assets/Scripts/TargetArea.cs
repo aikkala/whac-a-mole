@@ -1,7 +1,5 @@
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -50,10 +48,13 @@ public class TargetArea : MonoBehaviour
         objects.Clear();
     }
 
-    public void RemoveBomb(int id)
+    public void RemoveBomb(Bomb bmb)
     {
-        objects.Remove(id);
+        objects.Remove(bmb.ID);
         _numBombs -= 1;
+        
+        // Add this position to the list of available positions
+        _freePositions.Add(new Tuple<float, float>(bmb.Position.x, bmb.Position.y));
     }
 
     public void RemoveTarget(Target tgt)
@@ -130,7 +131,7 @@ public class TargetArea : MonoBehaviour
             return false;
         } 
         
-        if (Time.time > _spawnBan || _numTargets == 0 )
+        if (Time.time > _spawnBan /*|| _numTargets == 0*/ )
         {
             // Instantiate a new target
             Target newTarget = Instantiate(target, transform.position, transform.rotation, transform);
@@ -142,6 +143,7 @@ public class TargetArea : MonoBehaviour
             newTarget.Size = SampleSize();
             newTarget.Position = SampleGridPosition(newTarget.Size);
             newTarget.LifeSpan = SampleLifeSpan();
+            newTarget.VelocityThreshold = _playParameters.velocityThreshold;
 
             // Increase number of targets
             _numTargets += 1;
@@ -184,8 +186,11 @@ public class TargetArea : MonoBehaviour
 
             // Sample target location, size, life span
             newBomb.Size = SampleSize();
-            newBomb.Position = SamplePosition(newBomb.Size);
+            // newBomb.Position = SamplePosition(newBomb.Size);
+            newBomb.Position = SampleGridPosition(newBomb.Size);
             newBomb.LifeSpan = SampleLifeSpan();
+            newBomb.VelocityThreshold = _playParameters.velocityThreshold;
+
 
             _numBombs += 1;
             

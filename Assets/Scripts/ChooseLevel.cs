@@ -1,10 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InitLevel : MonoBehaviour
+public class ChooseLevel : MonoBehaviour
 {
     public string level;
-    public bool isTraining;
     
     void Start()
     {
@@ -14,7 +13,6 @@ public class InitLevel : MonoBehaviour
 
     void SetLevel()
     {
-        // Set play parameters
-        Globals.Instance.sequenceManager.playParameters.SetLevel(level, isTraining);
+        Globals.Instance.sequenceManager.playParameters.level = level;
     }
 }

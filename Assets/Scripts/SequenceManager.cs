@@ -31,8 +31,9 @@ public class SequenceManager : MonoBehaviour {
   public TextMeshPro roundCounterText;
   public event System.Action PlayStop;
   
-  // UI for choosing game levels
+  // UI for choosing game and level
   public GameObject levelChooser;
+  public GameObject gameChooser;
   
   // Game State (for all types of states)
   private RunIdentification currentRunId;
@@ -52,16 +53,12 @@ public class SequenceManager : MonoBehaviour {
       _points = value;
     }
   }
-
-  // Number of points per punched target
-  private const int PunchValue = 1;
   
   // Set max number of total targets (punched and missed) per round
   private int _punches;
   private int _misses;
   
-  // Set length of round (in seconds)
-  private const float RoundLength = 30;
+  // Start time
   private float _roundStart;
   
   // Boolean to indicate whether episode should be terminated
@@ -141,10 +138,10 @@ public class SequenceManager : MonoBehaviour {
   }
   
   public void RecordPunch(Target target) {
-    Points = _points + PunchValue;
+    Points = _points + target.points;
     _punches += 1;
     // pointCounterText.text = _points.ToString();
-    targetArea.RemoveTarget(target);
+    // targetArea.RemoveTarget(target);
     if (logger.Active)
     {
       logger.PushWithTimestamp("events", "target_hit, " + target.ID + ", " + target.PositionToString());
@@ -154,29 +151,30 @@ public class SequenceManager : MonoBehaviour {
   public void RecordMiss(Target target)
   {
     _misses += 1;
-    targetArea.RemoveTarget(target);
+    // targetArea.RemoveTarget(target);
     if (logger.Active)
     {
       logger.PushWithTimestamp("events", "target_miss, " + target.ID + ", " + target.PositionToString());
     }
   }
   
-  public void RecordBombDetonation(int bombID, string bombPositionStr) {
+  public void RecordBombDetonation(Bomb bomb) {
+    Points = _points + bomb.points;
     if (logger.Active)
     {
-      logger.PushWithTimestamp("events", "bomb_detonate, " + bombID + ", " + bombPositionStr);
+      logger.PushWithTimestamp("events", "bomb_detonate, " + bomb.ID + ", " + bomb.PositionToString());
     }
-    _terminate = true;
-    targetArea.RemoveBomb(bombID);
+    // _terminate = true;
+    // targetArea.RemoveBomb(bomb);
   }
 
-  public void RecordBombDisarm(int bombID, string bombPositionStr)
+  public void RecordBombDisarm(Bomb bomb)
   {
     if (logger.Active)
     {
-      logger.PushWithTimestamp("events", "bomb_disarm, " + bombID + ", " + bombPositionStr);
+      logger.PushWithTimestamp("events", "bomb_disarm, " + bomb.ID + ", " + bomb.PositionToString());
     }
-    targetArea.RemoveBomb(bombID);
+    // targetArea.RemoveBomb(bomb);
   }
 
   
@@ -194,8 +192,9 @@ public class SequenceManager : MonoBehaviour {
     // Hide target area
     targetArea.gameObject.SetActive(false);
     
-    // Show level chooser
+    // Show game and level choosers
     levelChooser.SetActive(true);
+    gameChooser.SetActive(true);
   }
   
   void OnEnterPlay() 
@@ -218,11 +217,12 @@ public class SequenceManager : MonoBehaviour {
   {
     // Update timer
     float elapsed = Time.time - _roundStart;
-    roundCounterText.text = (elapsed >= RoundLength ? 0 : RoundLength - elapsed).ToString("N1");
+    roundCounterText.text = (elapsed >= playParameters.roundLength ? 0 : playParameters.roundLength - elapsed).ToString("N1");
 
     // Update point counter text
-    float hitRate = _punches + _misses > 0 ? 100 * _punches / (_punches + _misses) : 0;
-    pointCounterText.text = hitRate.ToString("N0") + " %";
+    // float hitRate = _punches + _misses > 0 ? 100 * _punches / (_punches + _misses) : 0;
+    // pointCounterText.text = hitRate.ToString("N0") + " %";
+    pointCounterText.text = Points.ToString("N0");
   }
   
   void OnUpdatePlay() 
@@ -237,7 +237,7 @@ public class SequenceManager : MonoBehaviour {
     }
 
     // Check if time is up for this trial; or if we should terminate for other reasons
-    if ((Time.time - _roundStart > RoundLength) || _terminate)
+    if ((Time.time - _roundStart > playParameters.roundLength) || _terminate)
     {
         stateMachine.GotoState(GameState.Ready);
     }
@@ -257,8 +257,9 @@ public class SequenceManager : MonoBehaviour {
     // Hide target area
     targetArea.gameObject.SetActive(false);
 
-    // Show level chooser
+    // Show game and level choosers
     levelChooser.SetActive(true);
+    gameChooser.SetActive(true);
 
     if (logger.Active)
     {
@@ -303,8 +304,9 @@ public class SequenceManager : MonoBehaviour {
     _lineVisual.enabled = false;
     // _hammer.SetActive(true);
     
-    // Hide level chooser
+    // Hide game and level choosers
     levelChooser.SetActive(false);
+    gameChooser.SetActive(false);
     
     // Initialise log files
     if (logger.Active)
@@ -313,7 +315,7 @@ public class SequenceManager : MonoBehaviour {
       logger.Initialise("events");
       
       // Write level and random seed
-      logger.Push("states", "level " + playParameters.currentLevel + 
+      logger.Push("states", "game + " + playParameters.game + ", level " + playParameters.level + 
                             ", random seed " + playParameters.randomSeed);
       
       // Write headers
@@ -350,9 +352,11 @@ public class SequenceManager : MonoBehaviour {
     }
   }
 
-  public void SetLevel(string level, int randomSeed)
+  public void SetLevel(string game, string level, int randomSeed)
   {
-    playParameters.SetLevel(level, false, randomSeed);
+    playParameters.game = game;
+    playParameters.level = level;
+    playParameters.Initialise(false, randomSeed);
     
     // Visit Ready state, as some important stuff will be set (on exit)
     stateMachine.GotoState(GameState.Ready);

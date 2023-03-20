@@ -11,6 +11,9 @@ public class StartPlay : MonoBehaviour
 
     void StartGame()
     {
+        // Initialise game
+        Globals.Instance.sequenceManager.playParameters.Initialise(false);
+
         // Start playing
         Globals.Instance.sequenceManager.stateMachine.GotoState(GameState.Countdown);
     }
