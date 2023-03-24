@@ -1,6 +1,8 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public enum TargetState {
   FadeIn      = 0,
@@ -18,10 +20,14 @@ public class Target : MonoBehaviour
   public Func<Vector3, bool> VelocityThreshold { get; set; }
 
   // Points for hitting
-  public int points = 1;
+  public int points;
   
   // ID
   public int ID { get; set; }
+  
+  // Grid position
+  public Tuple<int, int> GridPosition { get; set; }
+  public int GridID { get; set; }
   
   // Score text
   private TextMeshProUGUI _scoreText;
@@ -71,13 +77,23 @@ public class Target : MonoBehaviour
   
   // Target fades away once dead
   private float _fadeOutTime = 0.3f;
+  
+  // Particle effect
+  private ParticleSystem _particleSystem;
+
+  // Target mesh
+  private GameObject _mesh;
+
+  // Haptics
+  public bool hapticsEnabled;
+  private ActionBasedController _xr;
 
   public virtual void Awake()
   {
     stateMachine = new StateMachine<TargetState>(TargetState.FadeIn);
 
     stateMachine.AddTransition(TargetState.FadeIn,     TargetState.Alive);
-    stateMachine.AddTransition(TargetState.Alive,     TargetState.FadeOut);
+    stateMachine.AddTransition(TargetState.Alive,      TargetState.FadeOut);
 
     stateMachine.State(TargetState.Alive)     .OnFixedUpdate += OnFixedUpdateAlive;
     stateMachine.State(TargetState.Alive)     .OnUpdate      += OnUpdateAlive;
@@ -101,8 +117,25 @@ public class Target : MonoBehaviour
     // Score is not displayed initially
     _scoreText = transform.Find("score_canvas/score_text").GetComponent<TextMeshProUGUI>();
     _scoreText.enabled = false;
+    
+    // Get particle system
+    _particleSystem = transform.Find("explosion").GetComponent<ParticleSystem>();
+    _particleSystem.Stop();
+
+    // Target mesh
+    _mesh = transform.Find("mesh").gameObject;
+
+    // Get controller
+    _xr = GameObject.Find("RightHand Controller").GetComponent<ActionBasedController>();
   }
-  
+
+  public void SetPosition(Tuple<int, int> idx, Tuple<float, float> pos, int gridID)
+  {
+    GridPosition = idx;
+    GridID = gridID;
+    Position = new Vector3(pos.Item1, pos.Item2, Size);
+  }
+
   void Update() {
     stateMachine.CurrentState().InvokeOnUpdate();
   }
@@ -161,55 +194,79 @@ public class Target : MonoBehaviour
   {
     // The target fades away (quickly)
     var elapsed = Time.time - _tod;
-    if (elapsed <= _fadeOutTime)
+    if (_mesh.activeSelf && elapsed <= _fadeOutTime)
     {
       // Fade away
       float scale = Math.Max(0.0f, 1 - elapsed / _fadeOutTime);
       transform.localScale = scale*_originalScale*Vector3.one;
     }
-    else
+    else if (elapsed > _fadeOutTime)
     {
       // After fading away, free up this position in the grid and destroy target
       Globals.Instance.sequenceManager.targetArea.RemoveTarget(this);
       DestroyTarget();
     }
   }
-  
-  private void OnTriggerEnter(Collider other) {
-    
+
+  private void OnTriggerEnter(Collider other)
+  {
+
     // Target can be hit only when it is Alive
     if (stateMachine.currentState != TargetState.Alive)
     {
       return;
     }
-    
+
     // Collision counts as a hit only if the relative velocity is high enough (punch is strong enough)
     Vector3 velocity = other.GetComponent<ObjectMovement>().Velocity;
     if (!VelocityThreshold(velocity))
     {
+      // Record contact -- but no hit!
+      Globals.Instance.sequenceManager.RecordContact(this, velocity);
       return;
     }
-  
+    Hit(velocity);
+  }
+
+  public void Hit()
+  {
+    Hit(new Vector3(0, 0, 0));
+  }
+  public void Hit(Vector3 velocity) {
+
+    // Target can be hit only when it is Alive
+    if (stateMachine.currentState != TargetState.Alive)
+    {
+      return;
+    }
+
     // Update time-of-death
     _tod = Time.fixedTime;
-      
-    // Change target color to blue to indicate it has been punched
-    // _material.color = Color.blue;
-    _scoreText.enabled = true;
-  
+    
     // Record punch
-    Globals.Instance.sequenceManager.RecordPunch(this);
+    Globals.Instance.sequenceManager.RecordHit(this, velocity);
+    
+    // Activate particle effect
+    _particleSystem.Play();
+    
+    // Hide mesh
+    _mesh.SetActive(false);
+
+    // Haptic feedback
+    if (hapticsEnabled)
+    {
+      _xr.SendHapticImpulse(0.2f, 0.05f);
+    }
     
     // Move to FadeOut
     stateMachine.GotoState(TargetState.FadeOut);
   }
   
-  public string PositionToString()
+  public string PositionToString(string delimiter=", ")
   {
     Vector3 pos = transform.position;
-    return pos.x + ", " + pos.y + ", " + pos.z;
+    return pos.x + delimiter + pos.y + delimiter + pos.z;
   }
-  
 }
 
  

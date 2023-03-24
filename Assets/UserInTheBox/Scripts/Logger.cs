@@ -1,17 +1,18 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
 namespace UserInTheBox
 {
-    public class Logger
+    public class Logger : MonoBehaviour
     {
         private Dictionary<string, StreamWriter> _files;
         private string _baseLogFolder;
-        public bool Active { get; set; }
+        private string _subjectFolder;
+        private string _experimentFolder;
 
-
-        public Logger()
+        public void Awake()
         {
             _baseLogFolder = Path.Combine(Application.persistentDataPath, "logging/" + System.DateTime.Now.ToString("yyyy-MM-dd"));
             Debug.Log("Logs will be saved to " + _baseLogFolder);
@@ -21,22 +22,53 @@ namespace UserInTheBox
                 
             // Create the output directory
             Directory.CreateDirectory(_baseLogFolder);
+        }
+
+        public string GenerateSubjectFolder()
+        {
+            // Generate a new subject folder based on timestamp
+            string subjectId = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
             
-            // By default logger is not active
-            Active = false;
+            // Create a folder for this subject
+            _subjectFolder = Path.Combine(_baseLogFolder, subjectId);
+            Directory.CreateDirectory(_subjectFolder);
+
+            return subjectId;
+        }
+
+        public void GenerateExperimentFolder(string experimentName)
+        {
+            // Make sure subject folder exists
+            if (_subjectFolder == null)
+            {
+                GenerateSubjectFolder();
+            }
+            
+            // Generate a new experiment folder based on timestamp
+            string time = DateTime.Now.ToString("HH-mm-ss");
+            
+            // Create a folder for this experiment
+            _experimentFolder = Path.Combine(_subjectFolder, time + "-" + experimentName);
+            Directory.CreateDirectory(_experimentFolder);
         }
 
         public void Initialise(string key)
         {
-            if (!Active)
+            // If subject folder is null, generate a new subject
+            if (_subjectFolder == null)
             {
-                return;
+                GenerateSubjectFolder();
+            }
+            
+            // If experiment folder is null, generate a new experiment
+            if (_experimentFolder == null)
+            {
+                GenerateExperimentFolder("undefined");
             }
             
             if (!_files.ContainsKey(key))
             {
-                string logPath = Path.Combine(_baseLogFolder,
-                    System.DateTime.Now.ToString("HH-mm-ss") + "-" + key + ".csv");
+                string logPath = Path.Combine(_experimentFolder, key + ".csv");
                 _files.Add(key, new StreamWriter(logPath));
             }
             else
@@ -47,11 +79,6 @@ namespace UserInTheBox
 
         public void Finalise(string key)
         {
-            if (!Active)
-            {
-                return;
-            }
-            
             if (_files.ContainsKey(key))
             {
                 _files[key].Close();
@@ -62,11 +89,6 @@ namespace UserInTheBox
         // public async void Push(string key, string msg)
         public void Push(string key, string msg)
         {
-            if (!Active)
-            {
-                return;
-            }
-            
             // Do we want async here? Does this even work in Unity?
             if (_files.ContainsKey(key))
             {

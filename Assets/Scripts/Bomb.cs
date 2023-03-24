@@ -18,7 +18,7 @@ public class Bomb : MonoBehaviour
   public Func<Vector3, bool> VelocityThreshold { get; set; }
 
   // Points for hitting
-  public int points = -10;
+  public int points;
   
   // ID
   public int ID { get; set; }
@@ -159,7 +159,7 @@ public class Bomb : MonoBehaviour
     else
     {
       // After fading away, free up this position in the grid and destroy target
-      Globals.Instance.sequenceManager.targetArea.RemoveBomb(this);
+      // Globals.Instance.sequenceManager.targetArea.RemoveBomb(this);
       DestroyBomb();
     }
   }

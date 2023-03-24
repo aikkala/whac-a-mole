@@ -14,12 +14,11 @@ public class TargetArea : MonoBehaviour
     private UserInTheBox.Logger _logger;
     private int _numTargets;
     private int _numBombs;
-    private Dictionary<int, Tuple<Vector3, float>> objects;
-    // private bool[,] _grid;
-    private List<Tuple<float, float>> _freePositions;
-    // private int _gridHeight, _gridWidth;
-    // private float[] _gridPosX;
-    // private float[] _gridPosY;
+    public Dictionary<int, Target> objects;
+    private int _gridWidth, _gridHeight;
+    private Tuple<float, float>[,] _gridPositions;
+    private int[,] _gridID;
+    private List<Tuple<int, int>> _freePositions;
     
     public static void Shuffle<T>(IList<T> ts) {
         // Shuffles the element order of the specified list.
@@ -36,8 +35,19 @@ public class TargetArea : MonoBehaviour
 
     public void Awake()
     {
-        objects = new Dictionary<int, Tuple<Vector3, float>>();
-        _freePositions = new List<Tuple<float, float>>();
+        // Initialise a dict for objects (targets and bombs)
+        objects = new Dictionary<int, Target>();
+
+        // Initialise grid size
+        _gridHeight = 3;
+        _gridWidth = 3;
+        
+        // Initialise grid
+        _gridPositions = new Tuple<float, float>[_gridHeight, _gridWidth];
+        _gridID = new int[_gridHeight, _gridWidth];
+        
+        // Initialise list of free positions
+        _freePositions = new List<Tuple<int, int>>();
     }
 
     public void Reset()
@@ -48,14 +58,14 @@ public class TargetArea : MonoBehaviour
         objects.Clear();
     }
 
-    public void RemoveBomb(Bomb bmb)
-    {
-        objects.Remove(bmb.ID);
-        _numBombs -= 1;
-        
-        // Add this position to the list of available positions
-        _freePositions.Add(new Tuple<float, float>(bmb.Position.x, bmb.Position.y));
-    }
+    // public void RemoveBomb(Bomb bmb)
+    // {
+    //     objects.Remove(bmb.ID);
+    //     _numBombs -= 1;
+    //     
+    //     // Add this position to the list of available positions
+    //     _freePositions.Add(new Tuple<float, float>(bmb.Position.x, bmb.Position.y));
+    // }
 
     public void RemoveTarget(Target tgt)
     {
@@ -63,7 +73,7 @@ public class TargetArea : MonoBehaviour
         _numTargets -= 1;
         
         // Add this position to the list of available positions
-        _freePositions.Add(new Tuple<float, float>(tgt.Position.x, tgt.Position.y));
+        _freePositions.Add(new Tuple<int, int>(tgt.GridPosition.Item1, tgt.GridPosition.Item2));
     }
     
     public void SetLogger(UserInTheBox.Logger logger)
@@ -74,35 +84,27 @@ public class TargetArea : MonoBehaviour
     {
         _playParameters = playParameters;
 
+        // Get max target size
         float targetRadius = _playParameters.targetSize[1];
         float targetDiameter = 2 * targetRadius;
         
-        // Initialise grid
-        int h = (int)Math.Floor(_playParameters.targetAreaHeight / targetDiameter);
-        int w = (int)Math.Floor(_playParameters.targetAreaWidth / targetDiameter);
-        // _grid = new bool[h, w];
-        // _gridHeight = h;
-        // _gridWidth = w;
-        // _gridPosX = new float[w];
-        // for (int i = 1; i <= w; i++)
-        // {
-        //     _gridPosX[i] = -(_playParameters.targetAreaWidth / 2) + (_playParameters.targetSize[1] / 2) * i;
-        // }
-        // _gridPosY = new float[h];
-        // for (int i = 1; i <= h; i++)
-        // {
-        //     _gridPosY[i] = -(_playParameters.targetAreaHeight / 2) + (_playParameters.targetSize[1] / 2) * i;
-        // }
-        
         // Populate list of free positions
         _freePositions.Clear();
-        for (int i = 0; i < w; i++)
+        for (int i = 0; i < _gridWidth; i++)
         {
-            float x = -(_playParameters.targetAreaWidth / 2) + targetRadius + targetDiameter*i;
-            for (int j = 0; j < h; j++)
+            float x = -(_playParameters.targetAreaWidth / 2) + targetRadius +
+                      i*(_playParameters.targetAreaWidth - targetDiameter) / (_gridWidth-1);
+            for (int j = 0; j < _gridHeight; j++)
             {
-                float y = -(_playParameters.targetAreaHeight / 2) + targetRadius + targetDiameter*j;
-                _freePositions.Add(new Tuple<float, float>(x, y));
+                float y = (_playParameters.targetAreaHeight / 2) - targetRadius -
+                          j*(_playParameters.targetAreaHeight - targetDiameter) / (_gridHeight-1);
+
+                // Add position and ID
+                _gridPositions[j, i] = new Tuple<float, float>(x, y);
+                _gridID[j, i] = j*_gridHeight + i;
+                
+                // Add to list of free positions
+                _freePositions.Add(new Tuple<int, int>(j, i));
             }
         }
     }
@@ -141,7 +143,9 @@ public class TargetArea : MonoBehaviour
 
             // Sample target location, size, life span
             newTarget.Size = SampleSize();
-            newTarget.Position = SampleGridPosition(newTarget.Size);
+            var gridPos = SampleGridPosition();
+            newTarget.SetPosition(gridPos, _gridPositions[gridPos.Item1, gridPos.Item2], 
+                _gridID[gridPos.Item1, gridPos.Item2]);
             newTarget.LifeSpan = SampleLifeSpan();
             newTarget.VelocityThreshold = _playParameters.velocityThreshold;
 
@@ -153,13 +157,14 @@ public class TargetArea : MonoBehaviour
             _objectID += 1;
             
             // Add to objects
-            objects.Add(newTarget.ID, new Tuple<Vector3, float>(newTarget.Position, newTarget.Size));
+            // objects.Add(newTarget.ID, new Tuple<Vector3, float>(newTarget.Position, newTarget.Size));
+            objects.Add(newTarget.ID, newTarget);
 
-            if (_logger.Active)
+            if (_logger.enabled)
             {
                 // Log the event
-                _logger.PushWithTimestamp("events", "spawn_target, " + newTarget.ID + ", "
-                                                    + newTarget.PositionToString());
+                _logger.PushWithTimestamp("events", "spawn_target, target ID" + newTarget.ID + ", position"
+                                                    + newTarget.PositionToString(" "));
             }
 
             return true;
@@ -187,7 +192,7 @@ public class TargetArea : MonoBehaviour
             // Sample target location, size, life span
             newBomb.Size = SampleSize();
             // newBomb.Position = SamplePosition(newBomb.Size);
-            newBomb.Position = SampleGridPosition(newBomb.Size);
+            // newBomb.Position = SampleGridPosition(newBomb.Size);
             newBomb.LifeSpan = SampleLifeSpan();
             newBomb.VelocityThreshold = _playParameters.velocityThreshold;
 
@@ -199,9 +204,9 @@ public class TargetArea : MonoBehaviour
             _objectID += 1;
             
             // Add to objects
-            objects.Add(newBomb.ID, new Tuple<Vector3, float>(newBomb.Position, newBomb.Size));
+            // objects.Add(newBomb.ID, new Tuple<Vector3, float>(newBomb.Position, newBomb.Size));
 
-            if (_logger.Active)
+            if (_logger.enabled)
             {
                 // Log the event
                 _logger.PushWithTimestamp("events", "spawn_bomb, " + newBomb.ID + ", " 
@@ -233,7 +238,7 @@ public class TargetArea : MonoBehaviour
             {
                 // If the suggested position overlaps with the position of another object, break and sample a new
                 // position.
-                if (Vector3.Distance(objectInfo.Item1, pos) < (objectInfo.Item2+targetSize))
+                if (Vector3.Distance(objectInfo.transform.position, pos) < (objectInfo.Size+targetSize))
                 {
                     good = false;
                     break;
@@ -251,7 +256,7 @@ public class TargetArea : MonoBehaviour
         return pos;
     }
 
-    private Vector3 SampleGridPosition(float targetSize)
+    private Tuple<int, int> SampleGridPosition()
     {
         // Note! Works currently only on 2D grids
         
@@ -263,11 +268,12 @@ public class TargetArea : MonoBehaviour
         
         // Shuffle the list and return first element
         Shuffle(_freePositions);
-        Tuple<float, float> pos = _freePositions[0];
+        Tuple<int, int> gridPos = _freePositions[0];
         _freePositions.RemoveAt(0);
         
         // z needs to be targetSize so the target is correctly positioned on the grid
-        return new Vector3(pos.Item1, pos.Item2, targetSize);
+        // return new Vector3(pos.Item1, pos.Item2, targetSize);
+        return gridPos;
     }
     
     private float SampleSize()

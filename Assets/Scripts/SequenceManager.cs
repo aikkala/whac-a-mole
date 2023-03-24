@@ -31,10 +31,11 @@ public class SequenceManager : MonoBehaviour {
   public TextMeshPro roundCounterText;
   public event System.Action PlayStop;
   
-  // UI for choosing game and level
-  public GameObject levelChooser;
-  public GameObject gameChooser;
-  
+  // UI for choosing game and level etc
+  public GameObject UI;
+  // public GameObject levelChooser;
+  // public GameObject gameChooser;
+
   // Game State (for all types of states)
   private RunIdentification currentRunId;
   
@@ -114,14 +115,12 @@ public class SequenceManager : MonoBehaviour {
     _lineVisual.enabled = true;
     _hammer.SetActive(true);
     
-    // Initialise logger
-    logger = new UserInTheBox.Logger();
-    
     // Initialise play parameters
     playParameters = new PlayParameters();
 
-    // Don't show countdown text
+    // Don't show countdown text or scoreboard
     countdownText.enabled = false;
+    scoreBoard.gameObject.SetActive(false);
 
     // Initialise state machine
     InitStateMachine();
@@ -137,30 +136,49 @@ public class SequenceManager : MonoBehaviour {
     stateMachine.CurrentState().InvokeOnUpdate();
   }
   
-  public void RecordPunch(Target target) {
+  public void RecordHit(Target target, Vector3 velocity) 
+  {
     Points = _points + target.points;
     _punches += 1;
-    // pointCounterText.text = _points.ToString();
-    // targetArea.RemoveTarget(target);
-    if (logger.Active)
+    if (logger.enabled)
     {
-      logger.PushWithTimestamp("events", "target_hit, " + target.ID + ", " + target.PositionToString());
+      logger.PushWithTimestamp("events", "target_hit, target ID " + target.ID +
+                                         ", grid position " + target.GridPosition.Item1 + " " + target.GridPosition.Item2 +
+                                         ", grid ID " + target.GridID +
+                                         ", position " + target.PositionToString(" ") + 
+                                         ", velocity " + UitBUtils.Vector3ToString(velocity, " "));
     }
   }
 
-  public void RecordMiss(Target target)
+  public void RecordContact(Target target, Vector3 velocity) 
   {
-    _misses += 1;
-    // targetArea.RemoveTarget(target);
-    if (logger.Active)
+    if (logger.enabled)
     {
-      logger.PushWithTimestamp("events", "target_miss, " + target.ID + ", " + target.PositionToString());
+      logger.PushWithTimestamp("events", "target_contact, target ID " + target.ID +
+                                         ", grid position " + target.GridPosition.Item1 + " " + target.GridPosition.Item2 +
+                                         ", grid ID " + target.GridID +
+                                         ", position " + target.PositionToString(" ") + 
+                                         ", velocity " + UitBUtils.Vector3ToString(velocity, " "));
     }
   }
   
-  public void RecordBombDetonation(Bomb bomb) {
+  public void RecordMiss(Target target)
+  {
+    _misses += 1;
+    if (logger.enabled)
+    {
+      logger.PushWithTimestamp("events", "target_miss, target ID " + target.ID +
+                                         ", grid position " + target.GridPosition.Item1 + " " +
+                                         target.GridPosition.Item2 +
+                                         ", grid ID " + target.GridID +
+                                         ", position " + target.PositionToString(" "));
+    }
+  }
+  
+  public void RecordBombDetonation(Bomb bomb)
+  {
     Points = _points + bomb.points;
-    if (logger.Active)
+    if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "bomb_detonate, " + bomb.ID + ", " + bomb.PositionToString());
     }
@@ -170,7 +188,7 @@ public class SequenceManager : MonoBehaviour {
 
   public void RecordBombDisarm(Bomb bomb)
   {
-    if (logger.Active)
+    if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "bomb_disarm, " + bomb.ID + ", " + bomb.PositionToString());
     }
@@ -178,7 +196,8 @@ public class SequenceManager : MonoBehaviour {
   }
 
   
-  void InitRun() {
+  void InitRun() 
+  {
     // I don't think these are used for anything
     var uid = System.Guid.NewGuid().ToString();
     currentRunId = new RunIdentification();
@@ -193,8 +212,7 @@ public class SequenceManager : MonoBehaviour {
     targetArea.gameObject.SetActive(false);
     
     // Show game and level choosers
-    levelChooser.SetActive(true);
-    gameChooser.SetActive(true);
+    UI.SetActive(true);
   }
   
   void OnEnterPlay() 
@@ -209,6 +227,9 @@ public class SequenceManager : MonoBehaviour {
     // Reset target id counter
     targetArea.Reset();
     
+    // Show scoreboard
+    scoreBoard.gameObject.SetActive(true);
+    
     // Update scoreboard
     UpdateScoreboard();
   }
@@ -222,7 +243,7 @@ public class SequenceManager : MonoBehaviour {
     // Update point counter text
     // float hitRate = _punches + _misses > 0 ? 100 * _punches / (_punches + _misses) : 0;
     // pointCounterText.text = hitRate.ToString("N0") + " %";
-    pointCounterText.text = Points.ToString("N0");
+    pointCounterText.text = _punches.ToString("N0") + " / " + _misses.ToString("N0");
   }
   
   void OnUpdatePlay() 
@@ -230,7 +251,7 @@ public class SequenceManager : MonoBehaviour {
     // Update scoreboard (timer and point / hit rate counter)
     UpdateScoreboard();
 
-    if (logger.Active)
+    if (logger.enabled)
     {
       // Log position
       logger.PushWithTimestamp("states", UitBUtils.GetStateString(Globals.Instance.simulatedUser));
@@ -256,15 +277,18 @@ public class SequenceManager : MonoBehaviour {
 
     // Hide target area
     targetArea.gameObject.SetActive(false);
+    
+    // Hide scoreboard
+    scoreBoard.gameObject.SetActive(false);
 
     // Show game and level choosers
-    levelChooser.SetActive(true);
-    gameChooser.SetActive(true);
+    UI.SetActive(true);
 
-    if (logger.Active)
+    if (logger.enabled)
     {
       // Log stats
-      logger.PushWithTimestamp("events", "hits: " + _punches + ", misses: " + _misses);
+      logger.PushWithTimestamp("events", "episode statistics, hits " + _punches + ", misses " + _misses + 
+                                         ", hit rate " + _punches / (_punches + _misses));
       
       // Stop logging
       logger.Finalise("states");
@@ -288,7 +312,7 @@ public class SequenceManager : MonoBehaviour {
     targetArea.SetPlayParameters(playParameters);
     
     // Enable logger if not training
-    logger.Active = !playParameters.isCurrentTraining;
+    // logger.Active = !playParameters.isCurrentTraining;
     
     // Set target area to correct position
     targetArea.SetPosition(headset);
@@ -305,25 +329,31 @@ public class SequenceManager : MonoBehaviour {
     // _hammer.SetActive(true);
     
     // Hide game and level choosers
-    levelChooser.SetActive(false);
-    gameChooser.SetActive(false);
+    UI.SetActive(false);
     
     // Initialise log files
-    if (logger.Active)
+    if (logger.enabled)
     {
+      // Create folder for this experiment
+      logger.GenerateExperimentFolder(playParameters.game + "-" + playParameters.level);
+      
       logger.Initialise("states");
       logger.Initialise("events");
       
       // Write level and random seed
-      logger.Push("states", "game + " + playParameters.game + ", level " + playParameters.level + 
+      logger.Push("states", "game " + playParameters.game + ", level " + playParameters.level + 
                             ", random seed " + playParameters.randomSeed);
       
       // Write headers
       logger.Push("states", UitBUtils.GetStateHeader());
-      logger.Push("events", "timestamp, type, target_id, target_pos_x, target_pos_y, target_pos_z");
       
       // Do first logging here, so we get correctly positioned controllers/headset when game begins
       logger.PushWithTimestamp("states", UitBUtils.GetStateString(Globals.Instance.simulatedUser));
+      
+      // Add target plane transform
+      logger.PushWithTimestamp("events", "target plane transform " + 
+                                         UitBUtils.TransformToString(targetArea.transform, " "));
+
     }
 
   }

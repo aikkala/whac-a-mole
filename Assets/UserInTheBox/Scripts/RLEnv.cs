@@ -11,15 +11,44 @@ namespace UserInTheBox
 
         public SequenceManager sequenceManager;
         public SimulatedUser simulatedUser;
+        public Logger logger;
         private float _reward, _previousPoints, _initialPoints;
         private bool _isFinished;
         private Transform _marker;
+        private string _game;
+        private string _level;
+        private bool _logging;
 
         public void Start()
         {
+            // Don't run RLEnv if it is not needed
+            if (!simulatedUser.enabled)
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+            
             _initialPoints = sequenceManager.Points;
             _previousPoints = _initialPoints;
             _marker = simulatedUser.rightHandController.Find("Hammer/marker").transform;
+            
+            // Get game variant and level
+            if (!simulatedUser.isDebug())
+            {
+                _game = UitBUtils.GetKeywordArgument("game");
+                _level = UitBUtils.GetKeywordArgument("level");
+                _logging = UitBUtils.GetOptionalArgument("logging");
+            }
+            else
+            {
+                _game = "difficulty";
+                _level = "level2";
+                _logging = false;
+            }
+            Debug.Log("RLEnv set to game " + _game + " and level " + _level);
+
+            // Enable logging if necessary
+            logger.enabled = _logging;
         }
         
         public void Update()
@@ -62,8 +91,8 @@ namespace UserInTheBox
         public void Reset()
         {
             // Set play level
-            sequenceManager.playParameters.game = "difficulty";
-            sequenceManager.playParameters.level = "level2";
+            sequenceManager.playParameters.game = _game;
+            sequenceManager.playParameters.level = _level;
             sequenceManager.playParameters.Initialise(true);
             
             // Visit Ready state, as some important stuff will be set (on exit)

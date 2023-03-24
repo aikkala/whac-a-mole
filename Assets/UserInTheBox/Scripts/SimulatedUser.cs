@@ -190,5 +190,10 @@ namespace UserInTheBox
         {
             _server?.Close();
         }
+        
+        public bool isDebug()
+        {
+            return _debug;
+        }
     }
 }

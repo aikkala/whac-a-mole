@@ -3,12 +3,14 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
 using UserInTheBox;
+using Logger = UserInTheBox.Logger;
 
 public class Replayer : MonoBehaviour
 {
     public SequenceManager sequenceManager;
-    private class LogData
+    private class StateData
     { 
+        public float timestamp { get; set; }
         public Vector3 leftControllerPosition { get; set; }
         public Vector3 rightControllerPosition { get; set; }
         public Vector3 headsetPosition { get; set; }
@@ -17,12 +19,20 @@ public class Replayer : MonoBehaviour
         public Quaternion headsetRotation { get; set; }
     }
 
+    private class EventData
+    {
+        public float timestamp { get; set; }
+        public int targetId { get; set; }
+    }
+
     public SimulatedUser simulatedUser;
-    private List<LogData> _logData;
-    private List<float> _timestamps;
+    public Logger logger;
+    private List<StateData> _stateData;
+    private List<EventData> _eventData;
     private StreamReader _reader;
     private float _startTime;
-    private int _idx = 1;  // Starts from 1 because index 0 contains initial position
+    private int _stateIdx = 1;  // Starts from 1 because index 0 contains initial position
+    private int _eventIdx = 0;
     private bool _debug = false;
 
     private void Awake()
@@ -36,22 +46,50 @@ public class Replayer : MonoBehaviour
         {
             enabled = UitBUtils.GetOptionalArgument("replay");
         }
+        
+        // Disable logger when replaying
+        if (enabled)
+        {
+            logger.enabled = false;
+        }
 
     }
 
     void Start()
     {
         // Set max delta time
-        Time.fixedDeltaTime = 0.01f;
-        Time.maximumDeltaTime = 0.01f;
+        // Time.fixedDeltaTime = 0.01f;
+        Time.maximumDeltaTime = 0.05f;
 
         // Disable TrackedPoseDriver, otherwise XR Origin will always try to reset position of camera to (0,0,0)?
         simulatedUser.mainCamera.GetComponent<TrackedPoseDriver>().enabled = false;
 
-        // Get log file path
-        string filepath = UitBUtils.GetKeywordArgument("log_filepath");
-        // string filepath = "/home/aleksi/Desktop/player_001/full.csv";
+        // Get state file path
+        string stateLogFilepath = UitBUtils.GetKeywordArgument("stateLogFilepath");
+        // string stateLogFilepath = "/home/aleksi/Desktop/player_001/states.csv";
         
+        // Parse state log file
+        string info = ParseStateLogFile(stateLogFilepath);
+        
+        // Set initial controller/headset positions/rotations
+        UpdateAnchors(_stateData[0]);
+        
+        // Get start time from first actual datum
+        _startTime = _stateData[1].timestamp;
+        
+        // Initialise state
+        InitialiseLevel(info);
+        
+        // Get event file path
+        string eventLogFilepath = UitBUtils.GetKeywordArgument("eventLogFilepath");
+        // string eventLogFilepath = "/home/aleksi/Desktop/player_001/events.csv";
+
+        // Parse event log file
+        ParseEventLogFile(eventLogFilepath);
+    }
+
+    private string ParseStateLogFile(string filepath)
+    {
         // Read log file (csv) 
         var reader = new StreamReader(filepath);
         
@@ -65,20 +103,20 @@ public class Replayer : MonoBehaviour
         if (header != UitBUtils.GetStateHeader())
         {
             throw new InvalidDataException("Header of log file " + filepath +
-                                       " does not match the header set in UitBUtils.GetStateHeader()");
+                                           " does not match the header set in UitBUtils.GetStateHeader()");
         }
 
         // Read rest of file
-        _logData = new List<LogData>();
-        _timestamps = new List<float>();
+        _stateData = new List<StateData>();
         while(!reader.EndOfStream)
         {
             // Read line
             string[] values = reader.ReadLine().Split(",");
             
             // Parse and add data to list
-            _logData.Add(new LogData
+            _stateData.Add(new StateData
             {
+                timestamp = Str2Float(values[0]),
                 leftControllerPosition = Str2Vec3(values[1], values[2], values[3]),
                 leftControllerRotation = Str2Quat(values[4], values[5], values[6], values[7]),
                 rightControllerPosition = Str2Vec3(values[8], values[9], values[10]),
@@ -86,23 +124,47 @@ public class Replayer : MonoBehaviour
                 headsetPosition = Str2Vec3(values[15],values[16], values[17]),
                 headsetRotation = Str2Quat(values[18], values[19],values[20], values[21])
             });
-            _timestamps.Add(Str2Float(values[0]));
         }
-        
-        // Set initial controller/headset positions/rotations
-        UpdateAnchors(_logData[0]);
-        
-        // Get start time from first actual datum
-        _startTime = _timestamps[1];
-        
-        // Initialise state
-        InitialiseLevel(info);
 
+        // Return level info
+        return info;
     }
 
+    private void ParseEventLogFile(string filepath)
+    {
+        // Read log file (csv) 
+        var reader = new StreamReader(filepath);
+        
+        // There are no headers, start parsing the file
+        _eventData = new List<EventData>();
+        while(!reader.EndOfStream)
+        {
+            // Read line
+            string[] values = reader.ReadLine().Split(", ");
+            
+            // Parse and add data to list -- only target hits are needed
+            if (values[1] == "target_hit")
+            {
+                string[] id = values[2].Split(" ");
+                _eventData.Add(new EventData
+                {
+                    timestamp = Str2Float(values[0]),
+                    targetId = Str2Int(id[2])
+                });
+                
+            }
+        }
+
+    }
+    
     public float Str2Float(string value)
     {
         return float.Parse(value);
+    }
+
+    public int Str2Int(string value)
+    {
+        return int.Parse(value);
     }
 
     public Vector3 Str2Vec3(string x, string y, string z)
@@ -131,7 +193,7 @@ public class Replayer : MonoBehaviour
     void Update()
     {
         // Stop application once all data has been played, and state changed to Ready
-        if (_idx >= _timestamps.Count && sequenceManager.stateMachine.currentState == GameState.Ready)
+        if (_stateIdx >= _stateData.Count && sequenceManager.stateMachine.currentState == GameState.Ready)
         {
             //If we are running in a standalone build of the game
 #if UNITY_STANDALONE
@@ -145,25 +207,39 @@ public class Replayer : MonoBehaviour
         }
         
         // Do nothing if we ran out of log data (wait for game to close), or wait until Time.time catches up
-        if (_idx >= _timestamps.Count || _timestamps[_idx] - _startTime > Time.time)
+        if (_stateIdx >= _stateData.Count || _stateData[_stateIdx].timestamp - _startTime > Time.time)
         {
             return;
         }
         
-        // Find next timestamp in log data
-        while (_idx < _timestamps.Count && _timestamps[_idx] - _startTime < Time.time)
+        // Find next timestamp in state data
+        while (_stateIdx < _stateData.Count && _stateData[_stateIdx].timestamp - _startTime < Time.time)
         {
-            _idx += 1;
+            _stateIdx += 1;
         }
         
         // Update anchors
-        if (_idx < _logData.Count)
+        if (_stateIdx < _stateData.Count)
         {
-            UpdateAnchors(_logData[_idx]);
+            UpdateAnchors(_stateData[_stateIdx]);
+        }
+        
+        // Check if we should hit a target (needed as backup, due to how timing works while replaying some hits may go
+        // unnoticed -- hit velocity depends on timing of the replayed data, which is only an approximation)
+        while (_eventIdx < _eventData.Count && _stateData[_stateIdx].timestamp >= _eventData[_eventIdx].timestamp)
+        {
+            if (sequenceManager.targetArea.objects.ContainsKey(_eventData[_eventIdx].targetId))
+            {
+                // Hit the target
+                sequenceManager.targetArea.objects[_eventData[_eventIdx].targetId].Hit();
+            }
+            
+            // Move to next event
+            _eventIdx += 1;
         }
     }
 
-    private void UpdateAnchors(LogData data)
+    private void UpdateAnchors(StateData data)
     {
         simulatedUser.mainCamera.transform.SetPositionAndRotation(data.headsetPosition, data.headsetRotation);
         simulatedUser.leftHandController.SetPositionAndRotation(data.leftControllerPosition, 

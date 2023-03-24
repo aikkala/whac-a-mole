@@ -38,11 +38,11 @@ public class PlayParameters {
     targetSpawnBan = new Vector2(0.0f, 0.5f);
     bombSpawnBan = new Vector2(0.0f, 0.5f);
     isCurrentTraining = isTraining;
-    roundLength = isTraining ? 10 : 60;
+    roundLength = isTraining ? 60 : 60;
     
     if (game + "-" + level == "difficulty-level1")
     {
-      maxTargets = 3;
+      maxTargets = 1;
       maxBombs = 0;
       targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
@@ -51,15 +51,15 @@ public class PlayParameters {
     else if (game + "-" + level == "difficulty-level2")
     {
       maxTargets = 3;
-      maxBombs = 1;
+      maxBombs = 0;
       targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => velocity.z > 0.6f;
     }
     else if (game + "-" + level == "difficulty-level3")
     {
-      maxTargets = 3;
-      maxBombs = 3;
+      maxTargets = 5;
+      maxBombs = 0;
       targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => velocity.z > 0.6f;
@@ -68,7 +68,7 @@ public class PlayParameters {
     {
       maxTargets = 3;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, -0.3f, 0.35f);
+      targetAreaPosition = new Vector3(0.1f, -0.3f, 0.4f);
       targetAreaRotation = new Quaternion(0.3826834f, 0, 0, 0.9238795f);
       velocityThreshold = velocity => velocity.y < -0.6f;
     }
@@ -90,7 +90,7 @@ public class PlayParameters {
     }
     else if (game + "-" + level == "unconstrained-level1")
     {
-      maxTargets = 3;
+      maxTargets = 1;
       maxBombs = 0;
       targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
@@ -106,10 +106,10 @@ public class PlayParameters {
     }
     else if (game + "-" + level == "unconstrained-level3")
     {
-      maxTargets = 3;
+      maxTargets = 5;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, 0.2f, 0.3f);
-      targetAreaRotation = new Quaternion(-0.3826834f, 0, 0, 0.9238795f);
+      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => true;
     }
     else
