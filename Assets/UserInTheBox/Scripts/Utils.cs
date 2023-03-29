@@ -21,6 +21,18 @@ namespace UserInTheBox
             throw new System.ArgumentException("Could not find " + argName + " from command line arguments");
         }
 
+        public static string GetOptionalKeywordArgument(string argName, string defaultValue)
+        {
+            if (GetOptionalArgument(argName))
+            {
+                return GetKeywordArgument(argName);
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
         public static bool GetOptionalArgument(string argName)
         {
             // Get argName from command line arguments.

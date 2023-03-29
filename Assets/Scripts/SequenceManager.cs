@@ -25,6 +25,9 @@ public class SequenceManager : MonoBehaviour {
   private XRInteractorLineVisual _lineVisual;
   private GameObject _hammer;
   
+  // Marker from the hammer
+  private Transform _marker;
+  
   // Set some info texts
   public Transform scoreBoard;
   public TextMeshPro pointCounterText;
@@ -55,9 +58,10 @@ public class SequenceManager : MonoBehaviour {
     }
   }
   
-  // Set max number of total targets (punched and missed) per round
+  // Keep track of hits, misses, and contacts (hits with insufficient velocity)
   private int _punches;
   private int _misses;
+  private int _contacts;
   
   // Start time
   private float _roundStart;
@@ -110,6 +114,9 @@ public class SequenceManager : MonoBehaviour {
     // Get ray line renderer and hammer renderer
     _lineVisual = rightController.GetComponent<XRInteractorLineVisual>();
     _hammer = rightController.GetNamedChild("Hammer");
+    
+    // Get the marker from the hammer
+    _marker = _hammer.GetNamedChild("marker").transform;
 
     // Ray line is enabled by default, as is hammer
     _lineVisual.enabled = true;
@@ -135,7 +142,16 @@ public class SequenceManager : MonoBehaviour {
   void Update() {
     stateMachine.CurrentState().InvokeOnUpdate();
   }
-  
+
+  public void RecordSpawn(Target target) 
+  {
+    if (logger.enabled)
+    {
+      logger.PushWithTimestamp("events", "target_spawn, target ID " + target.ID +
+                                         ", grid ID " + target.GridID);
+    }
+  }
+
   public void RecordHit(Target target, Vector3 velocity) 
   {
     Points = _points + target.points;
@@ -143,21 +159,18 @@ public class SequenceManager : MonoBehaviour {
     if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "target_hit, target ID " + target.ID +
-                                         ", grid position " + target.GridPosition.Item1 + " " + target.GridPosition.Item2 +
-                                         ", grid ID " + target.GridID +
-                                         ", position " + target.PositionToString(" ") + 
+                                         ", grid ID " + target.GridID + 
                                          ", velocity " + UitBUtils.Vector3ToString(velocity, " "));
     }
   }
 
-  public void RecordContact(Target target, Vector3 velocity) 
+  public void RecordContact(Target target, Vector3 velocity)
   {
+    _contacts += 1;
     if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "target_contact, target ID " + target.ID +
-                                         ", grid position " + target.GridPosition.Item1 + " " + target.GridPosition.Item2 +
                                          ", grid ID " + target.GridID +
-                                         ", position " + target.PositionToString(" ") + 
                                          ", velocity " + UitBUtils.Vector3ToString(velocity, " "));
     }
   }
@@ -168,10 +181,7 @@ public class SequenceManager : MonoBehaviour {
     if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "target_miss, target ID " + target.ID +
-                                         ", grid position " + target.GridPosition.Item1 + " " +
-                                         target.GridPosition.Item2 +
-                                         ", grid ID " + target.GridID +
-                                         ", position " + target.PositionToString(" "));
+                                         ", grid ID " + target.GridID);
     }
   }
   
@@ -205,9 +215,6 @@ public class SequenceManager : MonoBehaviour {
     currentRunId.startWallTime = System.DateTime.Now.ToString(Globals.Instance.timeFormat);
     currentRunId.startRealTime = Time.realtimeSinceStartup;
     
-    // Set logger to target area so we can log when new targets are spawned
-    targetArea.SetLogger(logger);
-    
     // Hide target area
     targetArea.gameObject.SetActive(false);
     
@@ -221,6 +228,7 @@ public class SequenceManager : MonoBehaviour {
     Points = 0;
     _punches = 0;
     _misses = 0;
+    _contacts = 0;
     _roundStart = Time.time;
     _terminate = false;
     
@@ -254,7 +262,7 @@ public class SequenceManager : MonoBehaviour {
     if (logger.enabled)
     {
       // Log position
-      logger.PushWithTimestamp("states", UitBUtils.GetStateString(Globals.Instance.simulatedUser));
+      logger.PushWithTimestamp("states", GetStateString());
     }
 
     // Check if time is up for this trial; or if we should terminate for other reasons
@@ -287,8 +295,8 @@ public class SequenceManager : MonoBehaviour {
     if (logger.enabled)
     {
       // Log stats
-      logger.PushWithTimestamp("events", "episode statistics, hits " + _punches + ", misses " + _misses + 
-                                         ", hit rate " + _punches / (_punches + _misses));
+      logger.PushWithTimestamp("events", "episode statistics, contacts " + _contacts + ", hits " + _punches + 
+                                         ", misses " + _misses + ", hit rate " + (float)_punches / (_punches + _misses));
       
       // Stop logging
       logger.Finalise("states");
@@ -311,11 +319,11 @@ public class SequenceManager : MonoBehaviour {
     // Play parameters have been chosen, update them
     targetArea.SetPlayParameters(playParameters);
     
-    // Enable logger if not training
-    // logger.Active = !playParameters.isCurrentTraining;
-    
     // Set target area to correct position
     targetArea.SetPosition(headset);
+
+    // Calculate grid mapping (for logging)
+    targetArea.CalculateGridMapping();
     
     // Scale target area correctly
     targetArea.SetScale();
@@ -345,17 +353,31 @@ public class SequenceManager : MonoBehaviour {
                             ", random seed " + playParameters.randomSeed);
       
       // Write headers
-      logger.Push("states", UitBUtils.GetStateHeader());
+      logger.Push("states", GetStateHeader());
       
       // Do first logging here, so we get correctly positioned controllers/headset when game begins
-      logger.PushWithTimestamp("states", UitBUtils.GetStateString(Globals.Instance.simulatedUser));
+      logger.PushWithTimestamp("states", GetStateString());
       
       // Add target plane transform
       logger.PushWithTimestamp("events", "target plane transform " + 
                                          UitBUtils.TransformToString(targetArea.transform, " "));
+      
+      // Add grid id-ji-xy mapping
+      logger.PushWithTimestamp("events", targetArea.GetGridMapping());
 
     }
 
+  }
+
+  string GetStateHeader()
+  {
+    return UitBUtils.GetStateHeader() +
+           ", marker_pos_x, marker_pos_y, marker_pos_z, marker_quat_x, marker_quat_y, marker_quat_z, marker_quat_w";
+  }
+  
+  string GetStateString()
+  {
+    return UitBUtils.GetStateString(Globals.Instance.simulatedUser) + ", " + UitBUtils.TransformToString(_marker);
   }
   
   void OnEnterCountdown()

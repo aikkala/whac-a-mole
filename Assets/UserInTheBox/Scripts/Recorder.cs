@@ -36,10 +36,11 @@ public class Recorder : MonoBehaviour
 
         if (enabled)
         {
+            _resolution = "1280x960";
             if (enabled && !_debug)
             {
                 _baseImageFolder = Path.Combine(UitBUtils.GetKeywordArgument("outputFolder"), "recording/");
-                _resolution = UitBUtils.GetKeywordArgument("resolution");
+                _resolution = UitBUtils.GetOptionalKeywordArgument("resolution", _resolution);
             }
 
             Debug.Log("Game play recording is enabled");
@@ -51,6 +52,7 @@ public class Recorder : MonoBehaviour
             _envCameraFolder = Path.Combine(_baseImageFolder, "envCamera/");
             _mainCameraFolder = Path.Combine(_baseImageFolder, "mainCamera/");
 
+            // Try to convert given resolution string to ints
             if (!Int32.TryParse(_resolution.Split("x")[0], out _width) ||
                 !Int32.TryParse(_resolution.Split("x")[1], out _height))
             {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UserInTheBox;
 using Random = UnityEngine.Random;
 
 public class TargetArea : MonoBehaviour
@@ -11,7 +12,6 @@ public class TargetArea : MonoBehaviour
     private float _bombSpawnBan;
     private PlayParameters _playParameters;
     private int _objectID;
-    private UserInTheBox.Logger _logger;
     private int _numTargets;
     private int _numBombs;
     public Dictionary<int, Target> objects;
@@ -19,6 +19,7 @@ public class TargetArea : MonoBehaviour
     private Tuple<float, float>[,] _gridPositions;
     private int[,] _gridID;
     private List<Tuple<int, int>> _freePositions;
+    private string _gridMapping;
     
     public static void Shuffle<T>(IList<T> ts) {
         // Shuffles the element order of the specified list.
@@ -75,18 +76,20 @@ public class TargetArea : MonoBehaviour
         // Add this position to the list of available positions
         _freePositions.Add(new Tuple<int, int>(tgt.GridPosition.Item1, tgt.GridPosition.Item2));
     }
-    
-    public void SetLogger(UserInTheBox.Logger logger)
-    {
-        _logger = logger;
-    }
+
     public void SetPlayParameters(PlayParameters playParameters)
     {
         _playParameters = playParameters;
+    }
+
+    public void CalculateGridMapping() {
 
         // Get max target size
         float targetRadius = _playParameters.targetSize[1];
         float targetDiameter = 2 * targetRadius;
+        
+        // Create strings with grid positions and IDs, to be stored in the log file
+        _gridMapping = "grid mapping";
         
         // Populate list of free positions
         _freePositions.Clear();
@@ -101,12 +104,27 @@ public class TargetArea : MonoBehaviour
 
                 // Add position and ID
                 _gridPositions[j, i] = new Tuple<float, float>(x, y);
-                _gridID[j, i] = j*_gridHeight + i;
+                var id = j * _gridHeight + i;
+                _gridID[j, i] = id;
+                
+                // Calculate global position -- set targetRadius as z coordinate, as the targets are shifted that much
+                // perpendicular to the plane towards positive z-axis to keep the surface of the target (semisphere) on
+                // target plane
+                Vector3 globalPos = transform.TransformPoint(new Vector3(x, y, targetRadius));
+
+                // Add to grid mapping
+                _gridMapping += " [" + id + " " + j + " " + i + " " + x + " " + " " + y + " " 
+                                + UitBUtils.Vector3ToString(globalPos, " ") + "]";
                 
                 // Add to list of free positions
                 _freePositions.Add(new Tuple<int, int>(j, i));
             }
         }
+    }
+
+    public string GetGridMapping()
+    {
+        return _gridMapping;
     }
     
     public void SetPosition(Transform headset)
@@ -159,13 +177,9 @@ public class TargetArea : MonoBehaviour
             // Add to objects
             // objects.Add(newTarget.ID, new Tuple<Vector3, float>(newTarget.Position, newTarget.Size));
             objects.Add(newTarget.ID, newTarget);
-
-            if (_logger.enabled)
-            {
-                // Log the event
-                _logger.PushWithTimestamp("events", "spawn_target, target ID" + newTarget.ID + ", position"
-                                                    + newTarget.PositionToString(" "));
-            }
+            
+            // Record target spawn
+            Globals.Instance.sequenceManager.RecordSpawn(newTarget);
 
             return true;
         }
@@ -206,12 +220,12 @@ public class TargetArea : MonoBehaviour
             // Add to objects
             // objects.Add(newBomb.ID, new Tuple<Vector3, float>(newBomb.Position, newBomb.Size));
 
-            if (_logger.enabled)
-            {
-                // Log the event
-                _logger.PushWithTimestamp("events", "spawn_bomb, " + newBomb.ID + ", " 
-                                                    + newBomb.PositionToString());
-            }
+            // if (_logger.enabled)
+            // {
+            //     // Log the event
+            //     _logger.PushWithTimestamp("events", "spawn_bomb, " + newBomb.ID + ", " 
+            //                                         + newBomb.PositionToString());
+            // }
 
             return true;
         }

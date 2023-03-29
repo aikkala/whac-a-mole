@@ -14,7 +14,10 @@ namespace UserInTheBox
 
         public void Awake()
         {
-            _baseLogFolder = Path.Combine(Application.persistentDataPath, "logging/" + System.DateTime.Now.ToString("yyyy-MM-dd"));
+            string outputFolder = UitBUtils.GetOptionalKeywordArgument("outputFolder", 
+                Application.persistentDataPath);
+            
+            _baseLogFolder = Path.Combine(outputFolder, "logging/" + DateTime.Now.ToString("yyyy-MM-dd"));
             Debug.Log("Logs will be saved to " + _baseLogFolder);
             
             // Initialise stream holder

@@ -46,7 +46,7 @@ public class PlayParameters {
       maxBombs = 0;
       targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
-      velocityThreshold = velocity => velocity.z > 0.6f;
+      velocityThreshold = velocity => velocity.z > 0.8f;
     }
     else if (game + "-" + level == "difficulty-level2")
     {
@@ -54,7 +54,7 @@ public class PlayParameters {
       maxBombs = 0;
       targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
-      velocityThreshold = velocity => velocity.z > 0.6f;
+      velocityThreshold = velocity => velocity.z > 0.8f;
     }
     else if (game + "-" + level == "difficulty-level3")
     {
@@ -62,7 +62,7 @@ public class PlayParameters {
       maxBombs = 0;
       targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
-      velocityThreshold = velocity => velocity.z > 0.6f;
+      velocityThreshold = velocity => velocity.z > 0.8f;
     }
     else if (game + "-" + level == "effort-level1")
     {
@@ -70,7 +70,7 @@ public class PlayParameters {
       maxBombs = 0;
       targetAreaPosition = new Vector3(0.1f, -0.3f, 0.4f);
       targetAreaRotation = new Quaternion(0.3826834f, 0, 0, 0.9238795f);
-      velocityThreshold = velocity => velocity.y < -0.6f;
+      velocityThreshold = velocity => velocity.y < -0.8f;
     }
     else if (game + "-" + level == "effort-level2")
     {
@@ -78,7 +78,7 @@ public class PlayParameters {
       maxBombs = 0;
       targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
-      velocityThreshold = velocity => velocity.z > 0.6f;
+      velocityThreshold = velocity => velocity.z > 0.8f;
     }
     else if (game + "-" + level == "effort-level3")
     {
@@ -86,7 +86,7 @@ public class PlayParameters {
       maxBombs = 0;
       targetAreaPosition = new Vector3(0.1f, 0.2f, 0.3f);
       targetAreaRotation = new Quaternion(-0.3826834f, 0, 0, 0.9238795f);
-      velocityThreshold = velocity => velocity.z > 0.6f;
+      velocityThreshold = velocity => velocity.z > 0.8f;
     }
     else if (game + "-" + level == "unconstrained-level1")
     {

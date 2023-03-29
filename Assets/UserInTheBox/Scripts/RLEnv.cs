@@ -17,6 +17,7 @@ namespace UserInTheBox
         private Transform _marker;
         private string _game;
         private string _level;
+        private int _fixedSeed;
         private bool _logging;
 
         public void Start()
@@ -38,11 +39,21 @@ namespace UserInTheBox
                 _game = UitBUtils.GetKeywordArgument("game");
                 _level = UitBUtils.GetKeywordArgument("level");
                 _logging = UitBUtils.GetOptionalArgument("logging");
+
+                string fixedSeed = UitBUtils.GetOptionalKeywordArgument("fixedSeed", "0");
+                // Try to parse given fixed seed string to int
+                if (!Int32.TryParse(fixedSeed, out _fixedSeed))
+                {
+                    Debug.Log("Couldn't parse fixed seed from given value, using default 0");
+                    _fixedSeed = 0;
+                }
+
             }
             else
             {
                 _game = "difficulty";
                 _level = "level2";
+                _fixedSeed = 0;
                 _logging = false;
             }
             Debug.Log("RLEnv set to game " + _game + " and level " + _level);
@@ -93,7 +104,7 @@ namespace UserInTheBox
             // Set play level
             sequenceManager.playParameters.game = _game;
             sequenceManager.playParameters.level = _level;
-            sequenceManager.playParameters.Initialise(true);
+            sequenceManager.playParameters.Initialise(true, _fixedSeed);
             
             // Visit Ready state, as some important stuff will be set (on exit)
             sequenceManager.stateMachine.GotoState(GameState.Ready);

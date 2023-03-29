@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -7,7 +8,6 @@ using Logger = UserInTheBox.Logger;
 
 public class Replayer : MonoBehaviour
 {
-    public SequenceManager sequenceManager;
     private class StateData
     { 
         public float timestamp { get; set; }
@@ -24,7 +24,8 @@ public class Replayer : MonoBehaviour
         public float timestamp { get; set; }
         public int targetId { get; set; }
     }
-
+    
+    public SequenceManager sequenceManager;
     public SimulatedUser simulatedUser;
     public Logger logger;
     private List<StateData> _stateData;
@@ -33,6 +34,7 @@ public class Replayer : MonoBehaviour
     private float _startTime;
     private int _stateIdx = 1;  // Starts from 1 because index 0 contains initial position
     private int _eventIdx = 0;
+    private int _playbackRate;
     private bool _debug = false;
 
     private void Awake()
@@ -47,10 +49,20 @@ public class Replayer : MonoBehaviour
             enabled = UitBUtils.GetOptionalArgument("replay");
         }
         
-        // Disable logger when replaying
         if (enabled)
         {
+            // Disable logger when replaying
             logger.enabled = false;
+
+            // Get playback rate (sampling rate)
+            string playbackRate = UitBUtils.GetOptionalKeywordArgument("playbackRate", "20");
+            
+            // Try to parse given sampling rate string to int
+            if (!Int32.TryParse(playbackRate, out _playbackRate))
+            {
+                Debug.Log("Couldn't parse playback rate from given value, using default 20");
+                _playbackRate = 20;
+            }
         }
 
     }
@@ -59,14 +71,15 @@ public class Replayer : MonoBehaviour
     {
         // Set max delta time
         // Time.fixedDeltaTime = 0.01f;
-        Time.maximumDeltaTime = 0.05f;
+        Time.maximumDeltaTime = 1f / _playbackRate;
+        //Application.targetFrameRate = _playbackRate;
 
         // Disable TrackedPoseDriver, otherwise XR Origin will always try to reset position of camera to (0,0,0)?
         simulatedUser.mainCamera.GetComponent<TrackedPoseDriver>().enabled = false;
 
         // Get state file path
-        string stateLogFilepath = UitBUtils.GetKeywordArgument("stateLogFilepath");
-        // string stateLogFilepath = "/home/aleksi/Desktop/player_001/states.csv";
+        // string stateLogFilepath = UitBUtils.GetKeywordArgument("stateLogFilepath");
+        string stateLogFilepath = "/home/aleksi/Desktop/player_001/states.csv";
         
         // Parse state log file
         string info = ParseStateLogFile(stateLogFilepath);
@@ -81,8 +94,8 @@ public class Replayer : MonoBehaviour
         InitialiseLevel(info);
         
         // Get event file path
-        string eventLogFilepath = UitBUtils.GetKeywordArgument("eventLogFilepath");
-        // string eventLogFilepath = "/home/aleksi/Desktop/player_001/events.csv";
+        // string eventLogFilepath = UitBUtils.GetKeywordArgument("eventLogFilepath");
+        string eventLogFilepath = "/home/aleksi/Desktop/player_001/events.csv";
 
         // Parse event log file
         ParseEventLogFile(eventLogFilepath);
@@ -246,5 +259,9 @@ public class Replayer : MonoBehaviour
             data.leftControllerRotation);
         simulatedUser.rightHandController.SetPositionAndRotation(data.rightControllerPosition, 
             data.rightControllerRotation);
+        
+        // Camera is looking a bit too high when replayed for some reason => rotate slightly downwards. We can do this
+        // because the env/game does not use camera rotation for anything
+        simulatedUser.mainCamera.transform.Rotate(new Vector3(10, 0, 0));
     }
 }
