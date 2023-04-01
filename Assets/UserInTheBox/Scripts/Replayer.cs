@@ -78,8 +78,8 @@ public class Replayer : MonoBehaviour
         simulatedUser.mainCamera.GetComponent<TrackedPoseDriver>().enabled = false;
 
         // Get state file path
-        // string stateLogFilepath = UitBUtils.GetKeywordArgument("stateLogFilepath");
-        string stateLogFilepath = "/home/aleksi/Desktop/player_001/states.csv";
+        string stateLogFilepath = UitBUtils.GetKeywordArgument("stateLogFilepath");
+        // string stateLogFilepath = "/home/aleksi/Desktop/pilot-2023-03-31/1680249328/11-02-41-difficulty-level2/states.csv";
         
         // Parse state log file
         string info = ParseStateLogFile(stateLogFilepath);
@@ -94,8 +94,8 @@ public class Replayer : MonoBehaviour
         InitialiseLevel(info);
         
         // Get event file path
-        // string eventLogFilepath = UitBUtils.GetKeywordArgument("eventLogFilepath");
-        string eventLogFilepath = "/home/aleksi/Desktop/player_001/events.csv";
+        string eventLogFilepath = UitBUtils.GetKeywordArgument("eventLogFilepath");
+        // string eventLogFilepath = "/home/aleksi/Desktop/pilot-2023-03-31/1680249328/11-02-41-difficulty-level2/events.csv";
 
         // Parse event log file
         ParseEventLogFile(eventLogFilepath);
@@ -113,10 +113,10 @@ public class Replayer : MonoBehaviour
         string header = reader.ReadLine();
         
         // Check header matches what we expect
-        if (header != UitBUtils.GetStateHeader())
+        if (header != sequenceManager.GetStateHeader())
         {
             throw new InvalidDataException("Header of log file " + filepath +
-                                           " does not match the header set in UitBUtils.GetStateHeader()");
+                                           " does not match the header set in SequenceManager.GetStateHeader()");
         }
 
         // Read rest of file

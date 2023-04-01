@@ -22,9 +22,6 @@ namespace UserInTheBox
             
             // Initialise stream holder
             _files = new Dictionary<string, StreamWriter>();
-                
-            // Create the output directory
-            Directory.CreateDirectory(_baseLogFolder);
         }
 
         public string GenerateSubjectFolder()

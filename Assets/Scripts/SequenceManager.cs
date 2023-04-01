@@ -369,7 +369,7 @@ public class SequenceManager : MonoBehaviour {
 
   }
 
-  string GetStateHeader()
+  public string GetStateHeader()
   {
     return UitBUtils.GetStateHeader() +
            ", marker_pos_x, marker_pos_y, marker_pos_z, marker_quat_x, marker_quat_y, marker_quat_z, marker_quat_w";
