@@ -3857,6 +3857,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 5025597913390867032, guid: a6a9eaf3b78061548987840b364ae830, type: 3}
   bomb: {fileID: -8491596604382434710, guid: 1fcbc53a5071a0159a13941ec4b63850, type: 3}
+  replayer: {fileID: 630784177}
 --- !u!4 &868538719 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c5ac3d764a56954c5aa2c013eba63fa8,

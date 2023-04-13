@@ -33,7 +33,7 @@ public class PlayParameters {
   
   public void Initialise(bool isTraining, int fixedSeed=0) {
     
-    targetLifeSpan = new Vector2(2.0f, 2.0f);
+    targetLifeSpan = new Vector2(1.0f, 1.0f);
     targetSize = new Vector2(0.025f, 0.025f);
     targetSpawnBan = new Vector2(0.0f, 0.5f);
     bombSpawnBan = new Vector2(0.0f, 0.5f);
@@ -44,7 +44,7 @@ public class PlayParameters {
     {
       maxTargets = 1;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaPosition = new Vector3(0.15f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => velocity.z > 0.8f;
     }
@@ -52,7 +52,7 @@ public class PlayParameters {
     {
       maxTargets = 3;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaPosition = new Vector3(0.15f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => velocity.z > 0.8f;
     }
@@ -60,7 +60,7 @@ public class PlayParameters {
     {
       maxTargets = 5;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaPosition = new Vector3(0.15f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => velocity.z > 0.8f;
     }
@@ -68,15 +68,15 @@ public class PlayParameters {
     {
       maxTargets = 3;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, -0.3f, 0.4f);
+      targetAreaPosition = new Vector3(0.15f, -0.3f, 0.35f);
       targetAreaRotation = new Quaternion(0.3826834f, 0, 0, 0.9238795f);
-      velocityThreshold = velocity => velocity.y < -0.8f;
+      velocityThreshold = velocity => velocity.y < -0.4f && velocity.z > 0.4f;
     }
     else if (game + "-" + level == "effort-level2")
     {
       maxTargets = 3;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaPosition = new Vector3(0.15f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => velocity.z > 0.8f;
     }
@@ -84,7 +84,7 @@ public class PlayParameters {
     {
       maxTargets = 3;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, 0.2f, 0.3f);
+      targetAreaPosition = new Vector3(0.15f, 0.2f, 0.3f);
       targetAreaRotation = new Quaternion(-0.3826834f, 0, 0, 0.9238795f);
       velocityThreshold = velocity => velocity.z > 0.8f;
     }
@@ -92,7 +92,7 @@ public class PlayParameters {
     {
       maxTargets = 1;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaPosition = new Vector3(0.15f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => true;
     }
@@ -100,7 +100,7 @@ public class PlayParameters {
     {
       maxTargets = 3;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaPosition = new Vector3(0.15f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => true;
     }
@@ -108,7 +108,7 @@ public class PlayParameters {
     {
       maxTargets = 5;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaPosition = new Vector3(0.15f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => true;
     }

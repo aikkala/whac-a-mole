@@ -22,7 +22,9 @@ public class Replayer : MonoBehaviour
     private class EventData
     {
         public float timestamp { get; set; }
+        public string eventType { get; set; }
         public int targetId { get; set; }
+        public int gridId { get; set; }
     }
     
     public SequenceManager sequenceManager;
@@ -78,8 +80,8 @@ public class Replayer : MonoBehaviour
         simulatedUser.mainCamera.GetComponent<TrackedPoseDriver>().enabled = false;
 
         // Get state file path
-        string stateLogFilepath = UitBUtils.GetKeywordArgument("stateLogFilepath");
-        // string stateLogFilepath = "/home/aleksi/Desktop/pilot-2023-03-31/1680249328/11-02-41-difficulty-level2/states.csv";
+        // string stateLogFilepath = UitBUtils.GetKeywordArgument("stateLogFilepath");
+        string stateLogFilepath = "/home/aleksi/Desktop/uitb/unity_effort_low/evaluate/logging/2023-04-05/1680718054/21-07-34-effort-level1/states.csv";
         
         // Parse state log file
         string info = ParseStateLogFile(stateLogFilepath);
@@ -94,8 +96,8 @@ public class Replayer : MonoBehaviour
         InitialiseLevel(info);
         
         // Get event file path
-        string eventLogFilepath = UitBUtils.GetKeywordArgument("eventLogFilepath");
-        // string eventLogFilepath = "/home/aleksi/Desktop/pilot-2023-03-31/1680249328/11-02-41-difficulty-level2/events.csv";
+        // string eventLogFilepath = UitBUtils.GetKeywordArgument("eventLogFilepath");
+        string eventLogFilepath = "/home/aleksi/Desktop/uitb/unity_effort_low/evaluate/logging/2023-04-05/1680718054/21-07-34-effort-level1/events.csv";
 
         // Parse event log file
         ParseEventLogFile(eventLogFilepath);
@@ -158,16 +160,24 @@ public class Replayer : MonoBehaviour
             // Parse and add data to list -- only target hits are needed
             if (values[1] == "target_hit")
             {
-                string[] id = values[2].Split(" ");
+                string[] targetId = values[2].Split(" ");
                 _eventData.Add(new EventData
                 {
                     timestamp = Str2Float(values[0]),
-                    targetId = Str2Int(id[2])
+                    eventType = "target_hit",
+                    targetId = Str2Int(targetId[2])
                 });
-                
+            } else if (values[1] == "target_spawn")
+            {
+                string[] gridId = values[3].Split(" ");
+                _eventData.Add(new EventData
+                {
+                    timestamp = Str2Float(values[0]),
+                    eventType = "target_spawn",
+                    gridId = Str2Int(gridId[2])
+                });
             }
         }
-
     }
     
     public float Str2Float(string value)
@@ -238,13 +248,21 @@ public class Replayer : MonoBehaviour
         }
         
         // Check if we should hit a target (needed as backup, due to how timing works while replaying some hits may go
-        // unnoticed -- hit velocity depends on timing of the replayed data, which is only an approximation)
+        // unnoticed -- hit velocity depends on timing of the replayed data, which is only an approximation) or spawn
+        // a new target (relying on random seed works when only 1 target at a time is alive, but seems to fail sooner
+        // or later when max number of targets > 1)
         while (_eventIdx < _eventData.Count && _stateData[_stateIdx].timestamp >= _eventData[_eventIdx].timestamp)
         {
-            if (sequenceManager.targetArea.objects.ContainsKey(_eventData[_eventIdx].targetId))
+            if (_eventData[_eventIdx].eventType == "target_hit")
             {
-                // Hit the target
-                sequenceManager.targetArea.objects[_eventData[_eventIdx].targetId].Hit();
+                if (sequenceManager.targetArea.objects.ContainsKey(_eventData[_eventIdx].targetId))
+                {
+                    // Hit the target
+                    sequenceManager.targetArea.objects[_eventData[_eventIdx].targetId].Hit();
+                }
+            } else if (_eventData[_eventIdx].eventType == "target_spawn")
+            {
+                sequenceManager.targetArea.SpawnTarget(_eventData[_eventIdx].gridId);
             }
             
             // Move to next event

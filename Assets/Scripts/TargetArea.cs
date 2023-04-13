@@ -8,6 +8,7 @@ public class TargetArea : MonoBehaviour
 {
     public Target target;
     public Bomb bomb;
+    public Replayer replayer;
     private float _spawnBan;
     private float _bombSpawnBan;
     private PlayParameters _playParameters;
@@ -18,6 +19,7 @@ public class TargetArea : MonoBehaviour
     private int _gridWidth, _gridHeight;
     private Tuple<float, float>[,] _gridPositions;
     private int[,] _gridID;
+    private Dictionary<int, Tuple<int, int>> _gridID2Pos;
     private List<Tuple<int, int>> _freePositions;
     private string _gridMapping;
     
@@ -46,6 +48,7 @@ public class TargetArea : MonoBehaviour
         // Initialise grid
         _gridPositions = new Tuple<float, float>[_gridHeight, _gridWidth];
         _gridID = new int[_gridHeight, _gridWidth];
+        _gridID2Pos = new Dictionary<int, Tuple<int, int>>();
         
         // Initialise list of free positions
         _freePositions = new List<Tuple<int, int>>();
@@ -106,6 +109,7 @@ public class TargetArea : MonoBehaviour
                 _gridPositions[j, i] = new Tuple<float, float>(x, y);
                 var id = j * _gridHeight + i;
                 _gridID[j, i] = id;
+                _gridID2Pos[id] = new Tuple<int, int>(j, i);
                 
                 // Calculate global position -- set targetRadius as z coordinate, as the targets are shifted that much
                 // perpendicular to the plane towards positive z-axis to keep the surface of the target (semisphere) on
@@ -142,51 +146,71 @@ public class TargetArea : MonoBehaviour
         );
     }
     
-    public bool SpawnTarget()
+    public bool MaybeSpawnTarget()
     {
-        // Sample a new target after spawn ban has passed OR if there are no targets
-        // if (Random.Range(0f, 1f) > _playParameters.SpawnProbability || transform.childCount >= _playParameters.MaxTargets+1)
-        if (_numTargets >= _playParameters.maxTargets)
+        // Don't sample new targets if there are enough already, or if we're replaying
+        if (_numTargets >= _playParameters.maxTargets || replayer.enabled)
         {
             return false;
         } 
         
+        // Sample a new target after spawn ban has passed
         if (Time.time > _spawnBan /*|| _numTargets == 0*/ )
         {
-            // Instantiate a new target
-            Target newTarget = Instantiate(target, transform.position, transform.rotation, transform);
 
-            // Sample new spawn ban time
-            _spawnBan = Time.time + SampleSpawnBan();
-
-            // Sample target location, size, life span
-            newTarget.Size = SampleSize();
-            var gridPos = SampleGridPosition();
-            newTarget.SetPosition(gridPos, _gridPositions[gridPos.Item1, gridPos.Item2], 
-                _gridID[gridPos.Item1, gridPos.Item2]);
-            newTarget.LifeSpan = SampleLifeSpan();
-            newTarget.VelocityThreshold = _playParameters.velocityThreshold;
-
-            // Increase number of targets
-            _numTargets += 1;
-            
-            // Set ID and increment counter
-            newTarget.ID = _objectID;
-            _objectID += 1;
-            
-            // Add to objects
-            // objects.Add(newTarget.ID, new Tuple<Vector3, float>(newTarget.Position, newTarget.Size));
-            objects.Add(newTarget.ID, newTarget);
-            
-            // Record target spawn
-            Globals.Instance.sequenceManager.RecordSpawn(newTarget);
-
+            SpawnTarget();
             return true;
         }
 
         return false;
     }
 
+    public void SpawnTarget(int gridId=-1)
+    {
+        // Instantiate a new target
+        Target newTarget = Instantiate(target, transform.position, transform.rotation, transform);
+
+        // Sample new spawn ban time
+        _spawnBan = Time.time + SampleSpawnBan();
+
+        // Sample target size
+        newTarget.Size = SampleSize();
+
+        // If grid position is not given, sample a new position
+        Tuple<int, int> gridPos;
+        if (gridId == -1)
+        {
+            gridPos = SampleGridPosition();
+        }
+        else
+        {
+            gridPos = _gridID2Pos[gridId];
+        }
+        
+        // Set position of newly spawned target
+        newTarget.SetPosition(gridPos, _gridPositions[gridPos.Item1, gridPos.Item2], 
+            _gridID[gridPos.Item1, gridPos.Item2]);
+        
+        // Sample life span
+        newTarget.LifeSpan = SampleLifeSpan();
+
+        // Set velocity threshold for hitting
+        newTarget.VelocityThreshold = _playParameters.velocityThreshold;
+
+        // Increase number of targets
+        _numTargets += 1;
+            
+        // Set ID and increment counter
+        newTarget.ID = _objectID;
+        _objectID += 1;
+            
+        // Add to objects
+        objects.Add(newTarget.ID, newTarget);
+            
+        // Record target spawn
+        Globals.Instance.sequenceManager.RecordSpawn(newTarget);
+    }
+    
     public bool spawnBomb()
     {
         // Sample a new bomb after spawn ban has passed

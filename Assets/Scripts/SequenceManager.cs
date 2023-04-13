@@ -273,8 +273,7 @@ public class SequenceManager : MonoBehaviour {
     else
     {
       // Continue play; potentially spawn a new target and/or a new bomb
-      targetArea.SpawnTarget();
-      targetArea.spawnBomb();
+      targetArea.MaybeSpawnTarget();
     }
   }
 
