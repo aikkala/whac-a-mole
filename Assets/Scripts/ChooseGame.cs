@@ -13,6 +13,6 @@ public class ChooseGame : MonoBehaviour
 
     void SetGame()
     {
-        Globals.Instance.sequenceManager.playParameters.game = game;
+        // Globals.Instance.sequenceManager.playParameters.game = game;
     }
 }

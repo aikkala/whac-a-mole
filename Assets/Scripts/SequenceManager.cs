@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TMPro;
 using Unity.XR.CoreUtils;
 using UnityEngine;
@@ -6,10 +7,10 @@ using UnityEngine.XR.Interaction.Toolkit;
 using UserInTheBox;
 
 public enum GameState {
-  Startup        = 0,
-  Ready          = 1,
-  Countdown      = 2,
-  Play           = 3,
+  Startup         = 0,
+  Ready           = 1,
+  Countdown       = 2,
+  Play            = 3,
 }
 
 public class SequenceManager : MonoBehaviour {
@@ -35,9 +36,10 @@ public class SequenceManager : MonoBehaviour {
   public event System.Action PlayStop;
   
   // UI for choosing game and level etc
-  public GameObject UI;
-  // public GameObject levelChooser;
-  // public GameObject gameChooser;
+  public GameObject startMenu;
+  public GameObject orderChooser;
+  public GameObject pauseMenu;
+  public GameObject endText;
 
   // Game State (for all types of states)
   private RunIdentification currentRunId;
@@ -81,6 +83,20 @@ public class SequenceManager : MonoBehaviour {
   // State getters
   public RunIdentification CurrentRunIdentification { get {return currentRunId; }}
   
+  // Define condition orders
+  public Dictionary<string, List<string>> conditionOrders = new Dictionary<string, List<string>>
+  {
+    { "Alpha",    new List<string>{"easy", "medium", "hard", "low", "mid", "high"} },
+    { "Bravo",    new List<string>{"easy", "hard", "medium", "low", "high", "mid"} },
+    { "Charlie",  new List<string>{"medium", "easy", "hard", "mid", "low", "high"} },
+    { "Delta",    new List<string>{"medium", "hard", "easy", "mid", "high", "low"} },
+    { "Echo",     new List<string>{"hard", "easy", "medium", "high", "low", "mid"} },
+    { "Foxtrot",  new List<string>{"hard", "medium", "easy", "high", "mid", "low"} },
+  };
+  private string _experimentOrder;
+  private int _conditionIdx;
+  private bool _isExperiment = false;
+
   // Run State
   void InitStateMachine() {
     stateMachine  = new StateMachine<GameState>(GameState.Startup);
@@ -205,6 +221,17 @@ public class SequenceManager : MonoBehaviour {
     // targetArea.RemoveBomb(bomb);
   }
 
+  public void UpdateExperimentOrder(string order)
+  {
+    _experimentOrder = order;
+  }
+
+  public void InitExperiment()
+  {
+    _conditionIdx = 0;
+    _isExperiment = true;
+    playParameters.condition = conditionOrders[_experimentOrder][_conditionIdx];
+  }
   
   void InitRun() 
   {
@@ -219,7 +246,10 @@ public class SequenceManager : MonoBehaviour {
     targetArea.gameObject.SetActive(false);
     
     // Show game and level choosers
-    UI.SetActive(true);
+    startMenu.SetActive(true);
+    orderChooser.SetActive(true);
+    pauseMenu.SetActive(false);
+    endText.SetActive(false);
   }
   
   void OnEnterPlay() 
@@ -287,10 +317,7 @@ public class SequenceManager : MonoBehaviour {
     
     // Hide scoreboard
     scoreBoard.gameObject.SetActive(false);
-
-    // Show game and level choosers
-    UI.SetActive(true);
-
+    
     if (logger.enabled)
     {
       // Log stats
@@ -301,17 +328,48 @@ public class SequenceManager : MonoBehaviour {
       logger.Finalise("states");
       logger.Finalise("events");
     }
+    
+    // Increment condition counter
+    if (_isExperiment)
+    {
+      _conditionIdx += 1;
+    }
   }
 
   void OnEnterReady() 
   {    
     // Hide hammer, show ray
     _lineVisual.enabled = true;
-    // _hammer.SetActive(false);
+
+    // When running an experiment, behaviour of GameState.Ready depends on whether there are conditions left
+    if (_isExperiment)
+    {
+      if (_conditionIdx < conditionOrders[_experimentOrder].Count)
+      {
+        playParameters.condition = conditionOrders[_experimentOrder][_conditionIdx];
+        // Show pause text and button
+        pauseMenu.SetActive(true);
+      }
+      else
+      {
+        // Show game end text
+        endText.SetActive(true);
+      }
+    }
+    else
+    {
+      // Show initial menu
+      startMenu.SetActive(true);
+      orderChooser.SetActive(true);
+    }
   }
   
   void OnExitReady() 
   {
+    
+    // Initialise play
+    playParameters.Initialise();
+
     // Display target area
     targetArea.gameObject.SetActive(true);
     
@@ -333,22 +391,23 @@ public class SequenceManager : MonoBehaviour {
     
     // Hide the controller ray, show hammer
     _lineVisual.enabled = false;
-    // _hammer.SetActive(true);
     
-    // Hide game and level choosers
-    UI.SetActive(false);
+    // Hide all menus
+    startMenu.SetActive(false);
+    orderChooser.SetActive(false);
+    pauseMenu.SetActive(false);
     
     // Initialise log files
     if (logger.enabled)
     {
       // Create folder for this experiment
-      logger.GenerateExperimentFolder(playParameters.game + "-" + playParameters.level);
+      logger.GenerateExperimentFolder(playParameters.condition);
       
       logger.Initialise("states");
       logger.Initialise("events");
       
       // Write level and random seed
-      logger.Push("states", "game " + playParameters.game + ", level " + playParameters.level + 
+      logger.Push("states", "condition " + playParameters.condition + 
                             ", random seed " + playParameters.randomSeed);
       
       // Write headers
@@ -403,17 +462,15 @@ public class SequenceManager : MonoBehaviour {
     }
   }
 
-  public void SetLevel(string game, string level, int randomSeed)
+  public void SetCondition(string condition, int randomSeed)
   {
-    playParameters.game = game;
-    playParameters.level = level;
-    playParameters.Initialise(false, randomSeed);
+    playParameters.condition = condition;
+    playParameters.randomSeed = randomSeed;
     
     // Visit Ready state, as some important stuff will be set (on exit)
     stateMachine.GotoState(GameState.Ready);
     
     // Start playing
     stateMachine.GotoState(GameState.Play);
-
   }
 }

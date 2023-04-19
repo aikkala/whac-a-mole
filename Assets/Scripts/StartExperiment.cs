@@ -1,20 +1,20 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class StartPlay : MonoBehaviour
+public class StartExperiment : MonoBehaviour
 {
     public UserInTheBox.Logger logger;
     
     void Start()
     {
         Button btn = gameObject.GetComponent<Button>();
-        btn.onClick.AddListener(StartGame);
+        btn.onClick.AddListener(OnClick);
     }
 
-    void StartGame()
+    void OnClick()
     {
-        // Initialise game
-        Globals.Instance.sequenceManager.playParameters.Initialise(false);
+        // Initialise experiment
+        Globals.Instance.sequenceManager.InitExperiment();
         
         // Enable logging
         logger.enabled = true;

@@ -80,8 +80,8 @@ public class Replayer : MonoBehaviour
         simulatedUser.mainCamera.GetComponent<TrackedPoseDriver>().enabled = false;
 
         // Get state file path
-        // string stateLogFilepath = UitBUtils.GetKeywordArgument("stateLogFilepath");
-        string stateLogFilepath = "/home/aleksi/Desktop/uitb/unity_effort_low/evaluate/logging/2023-04-05/1680718054/21-07-34-effort-level1/states.csv";
+        string stateLogFilepath = UitBUtils.GetKeywordArgument("stateLogFilepath");
+        // string stateLogFilepath = "/home/aleksi/Desktop/testdata/2023-04-17/1681747528/19-05-28-medium/states.csv";
         
         // Parse state log file
         string info = ParseStateLogFile(stateLogFilepath);
@@ -92,12 +92,12 @@ public class Replayer : MonoBehaviour
         // Get start time from first actual datum
         _startTime = _stateData[1].timestamp;
         
-        // Initialise state
-        InitialiseLevel(info);
+        // Initialise play
+        InitialisePlay(info);
         
         // Get event file path
-        // string eventLogFilepath = UitBUtils.GetKeywordArgument("eventLogFilepath");
-        string eventLogFilepath = "/home/aleksi/Desktop/uitb/unity_effort_low/evaluate/logging/2023-04-05/1680718054/21-07-34-effort-level1/events.csv";
+        string eventLogFilepath = UitBUtils.GetKeywordArgument("eventLogFilepath");
+        // string eventLogFilepath = "/home/aleksi/Desktop/testdata/2023-04-17/1681747528/19-05-28-medium/events.csv";
 
         // Parse event log file
         ParseEventLogFile(eventLogFilepath);
@@ -200,16 +200,15 @@ public class Replayer : MonoBehaviour
         return new Quaternion(Str2Float(x), Str2Float(y), Str2Float(z), Str2Float(w));
     }
 
-    private void InitialiseLevel(string info)
+    private void InitialisePlay(string info)
     {
         // Do some parsing
-        string[] values = info.Split(",");
-        string game = values[0].Split(" ")[1];
-        string level = values[1].Split(" ")[2];
-        int randomSeed = int.Parse(values[2].Split(" ")[3]);
+        string[] values = info.Split(", ");
+        string condition = values[0].Split(" ")[1];
+        int randomSeed = int.Parse(values[1].Split(" ")[2]);
         
         // Initialise state
-        sequenceManager.SetLevel(game, level, randomSeed);
+        sequenceManager.SetCondition(condition, randomSeed);
     }
 
     // Update is called once per frame

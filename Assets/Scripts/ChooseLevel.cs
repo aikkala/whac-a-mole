@@ -13,6 +13,6 @@ public class ChooseLevel : MonoBehaviour
 
     void SetLevel()
     {
-        Globals.Instance.sequenceManager.playParameters.level = level;
+        // Globals.Instance.sequenceManager.playParameters.level = level;
     }
 }

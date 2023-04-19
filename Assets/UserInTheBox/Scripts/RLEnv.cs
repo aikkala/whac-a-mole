@@ -15,8 +15,7 @@ namespace UserInTheBox
         private float _reward, _previousPoints, _initialPoints;
         private bool _isFinished;
         private Transform _marker;
-        private string _game;
-        private string _level;
+        private string _condition;
         private int _fixedSeed;
         private bool _logging;
 
@@ -36,8 +35,7 @@ namespace UserInTheBox
             // Get game variant and level
             if (!simulatedUser.isDebug())
             {
-                _game = UitBUtils.GetKeywordArgument("game");
-                _level = UitBUtils.GetKeywordArgument("level");
+                _condition = UitBUtils.GetKeywordArgument("condition");
                 _logging = UitBUtils.GetOptionalArgument("logging");
 
                 string fixedSeed = UitBUtils.GetOptionalKeywordArgument("fixedSeed", "0");
@@ -51,12 +49,11 @@ namespace UserInTheBox
             }
             else
             {
-                _game = "difficulty";
-                _level = "level2";
+                _condition = "medium";
                 _fixedSeed = 0;
                 _logging = false;
             }
-            Debug.Log("RLEnv set to game " + _game + " and level " + _level);
+            Debug.Log("RLEnv set to condition " + _condition);
 
             // Enable logging if necessary
             logger.enabled = _logging;
@@ -102,9 +99,8 @@ namespace UserInTheBox
         public void Reset()
         {
             // Set play level
-            sequenceManager.playParameters.game = _game;
-            sequenceManager.playParameters.level = _level;
-            sequenceManager.playParameters.Initialise(true, _fixedSeed);
+            sequenceManager.playParameters.condition = _condition;
+            sequenceManager.playParameters.Initialise(_fixedSeed);
             
             // Visit Ready state, as some important stuff will be set (on exit)
             sequenceManager.stateMachine.GotoState(GameState.Ready);
