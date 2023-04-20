@@ -33,6 +33,7 @@ public class SequenceManager : MonoBehaviour {
   public Transform scoreBoard;
   public TextMeshPro pointCounterText;
   public TextMeshPro roundCounterText;
+  private bool _showScoreboard = false;
   public event System.Action PlayStop;
   
   // UI for choosing game and level etc
@@ -266,10 +267,13 @@ public class SequenceManager : MonoBehaviour {
     targetArea.Reset();
     
     // Show scoreboard
-    scoreBoard.gameObject.SetActive(true);
-    
-    // Update scoreboard
-    UpdateScoreboard();
+    if (_showScoreboard)
+    {
+      scoreBoard.gameObject.SetActive(true);
+      
+      // Update scoreboard
+      UpdateScoreboard();
+    }
   }
 
   void UpdateScoreboard()
@@ -279,15 +283,16 @@ public class SequenceManager : MonoBehaviour {
     roundCounterText.text = (elapsed >= playParameters.roundLength ? 0 : playParameters.roundLength - elapsed).ToString("N1");
 
     // Update point counter text
-    // float hitRate = _punches + _misses > 0 ? 100 * _punches / (_punches + _misses) : 0;
-    // pointCounterText.text = hitRate.ToString("N0") + " %";
     pointCounterText.text = _punches.ToString("N0") + " / " + _misses.ToString("N0");
   }
   
   void OnUpdatePlay() 
   {
     // Update scoreboard (timer and point / hit rate counter)
-    UpdateScoreboard();
+    if (_showScoreboard)
+    {
+      UpdateScoreboard();
+    }
 
     if (logger.enabled)
     {
@@ -384,10 +389,13 @@ public class SequenceManager : MonoBehaviour {
     
     // Scale target area correctly
     targetArea.SetScale();
-    
-    // Set also position of point screen (showing timer/score)
-    Vector3 scoreBoardOffset = new Vector3(-playParameters.targetAreaWidth, 0.0f, 0.0f);
-    scoreBoard.SetPositionAndRotation(targetArea.transform.position + scoreBoardOffset, Quaternion.identity);
+
+    if (_showScoreboard)
+    {
+      // Set also position of point screen (showing timer/score)
+      Vector3 scoreBoardOffset = new Vector3(-playParameters.targetAreaWidth, 0.0f, 0.0f);
+      scoreBoard.SetPositionAndRotation(targetArea.transform.position + scoreBoardOffset, Quaternion.identity);
+    }
     
     // Hide the controller ray, show hammer
     _lineVisual.enabled = false;

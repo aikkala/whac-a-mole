@@ -42,7 +42,7 @@ public class PlayParameters {
     {
       maxTargets = 1;
       maxBombs = 0;
-      targetAreaPosition = new Vector3(0.1f, -0.1f, 0.4f);
+      targetAreaPosition = new Vector3(0.15f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => velocity.z > 0.8f;
     }
