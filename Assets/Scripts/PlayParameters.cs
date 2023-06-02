@@ -62,6 +62,15 @@ public class PlayParameters {
       targetAreaRotation = Quaternion.identity;
       velocityThreshold = velocity => velocity.z > 0.8f;
     }
+    else if (condition == "low-easy" || condition == "low-easy-unconstrained")
+    {
+      maxTargets = 1;
+      maxBombs = 0;
+      targetAreaPosition = new Vector3(0.15f, -0.3f, 0.35f);
+      targetAreaRotation = new Quaternion(0.3826834f, 0, 0, 0.9238795f);
+      // velocityThreshold = velocity => velocity.y < -0.424f && velocity.z > 0.424f;
+      velocityThreshold = velocity => velocity.y < -0.8f;
+    }
     else if (condition == "low" || condition == "low-unconstrained")
     {
       maxTargets = 3;
@@ -71,12 +80,21 @@ public class PlayParameters {
       // velocityThreshold = velocity => velocity.y < -0.424f && velocity.z > 0.424f;
       velocityThreshold = velocity => velocity.y < -0.8f;
     }
-    else if (condition == "mid" || condition == "mid-unconstrained")
-    {
+    else if (condition == "mid" || condition == "mid-unconstrained") 
+    {        
+      //should equal "medium"/"medium-unconstrained" conditions
       maxTargets = 3;
       maxBombs = 0;
       targetAreaPosition = new Vector3(0.15f, -0.1f, 0.4f);
       targetAreaRotation = Quaternion.identity;
+      velocityThreshold = velocity => velocity.z > 0.8f;
+    }    
+    else if (condition == "high-easy" || condition == "high-easy-unconstrained")
+    {
+      maxTargets = 1;
+      maxBombs = 0;
+      targetAreaPosition = new Vector3(0.15f, 0.2f, 0.3f);
+      targetAreaRotation = new Quaternion(-0.3826834f, 0, 0, 0.9238795f);
       velocityThreshold = velocity => velocity.z > 0.8f;
     }
     else if (condition == "high" || condition == "high-unconstrained")
