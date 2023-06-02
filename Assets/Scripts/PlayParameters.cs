@@ -71,7 +71,7 @@ public class PlayParameters {
       // velocityThreshold = velocity => velocity.y < -0.424f && velocity.z > 0.424f;
       velocityThreshold = velocity => velocity.y < -0.8f;
     }
-    else if (condition == "low" || condition == "low-unconstrained")
+    else if (condition == "low-medium" || condition == "low-medium-unconstrained")
     {
       maxTargets = 3;
       maxBombs = 0;
@@ -97,7 +97,7 @@ public class PlayParameters {
       targetAreaRotation = new Quaternion(-0.3826834f, 0, 0, 0.9238795f);
       velocityThreshold = velocity => velocity.z > 0.8f;
     }
-    else if (condition == "high" || condition == "high-unconstrained")
+    else if (condition == "high-medium" || condition == "high-medium-unconstrained")
     {
       maxTargets = 3;
       maxBombs = 0;
