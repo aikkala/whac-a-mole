@@ -67,7 +67,7 @@ public class SequenceManager : MonoBehaviour {
   private int _contacts;
   
   // Start time
-  private float _roundStart;
+  public float _roundStart;
   
   // Boolean to indicate whether episode should be terminated
   private bool _terminate;

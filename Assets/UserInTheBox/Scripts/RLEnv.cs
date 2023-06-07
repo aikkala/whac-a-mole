@@ -12,7 +12,7 @@ namespace UserInTheBox
         public SequenceManager sequenceManager;
         public SimulatedUser simulatedUser;
         public Logger logger;
-        private float _reward, _previousPoints, _initialPoints;
+        private float _reward, _previousPoints, _initialPoints, _elapsedTimeScaled;
         private bool _isFinished;
         private Transform _marker;
         private string _condition;
@@ -63,6 +63,9 @@ namespace UserInTheBox
         {
             // Update reward
             CalculateReward();
+
+            // Calculate how much time has elapsed in this round (scaled [-1, 1])
+            CalculateTimeFeature();
             
             // Update finished
             _isFinished = sequenceManager.stateMachine.currentState.Equals(GameState.Ready);
@@ -89,6 +92,17 @@ namespace UserInTheBox
         public float GetReward()
         {
             return _reward;
+        }
+
+        private void CalculateTimeFeature()
+        {
+            // Calculate how much time has elapsed in this round (scaled [-1, 1])
+            _elapsedTimeScaled = (float)(((Time.time - sequenceManager._roundStart) / sequenceManager.playParameters.roundLength) - 0.5) * 2;
+        }
+
+        public float GetTimeFeature()
+        {
+            return _elapsedTimeScaled;
         }
 
         public bool IsFinished()

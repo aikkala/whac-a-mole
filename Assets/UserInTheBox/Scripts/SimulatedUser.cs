@@ -177,8 +177,11 @@ namespace UserInTheBox
             // Check if task is finished (terminated by either the app or the simulated user)
             var isFinished = env.IsFinished() || _server.GetSimulationState().isFinished;
 
+            // Get elapsed time (scaled [-1, 1])
+            var timeFeature = env.GetTimeFeature();
+
             // Send observation to client
-            _server.SendObservation(isFinished, reward, _previousImage);
+            _server.SendObservation(isFinished, reward, _previousImage, timeFeature);
         }
         
         private void OnDestroy()
