@@ -67,7 +67,7 @@ public class SequenceManager : MonoBehaviour {
   private int _contacts;
   
   // Start time
-  public float _roundStart;
+  private float _roundStart;
   
   // Boolean to indicate whether episode should be terminated
   private bool _terminate;
@@ -480,5 +480,12 @@ public class SequenceManager : MonoBehaviour {
     
     // Start playing
     stateMachine.GotoState(GameState.Play);
+  }
+
+  public float GetTimeFeature()
+  {
+    // Calculate how much time has elapsed in this round (scaled [-1, 1])
+    float _elapsedTimeScaled = 2*((Time.time - _roundStart) / playParameters.roundLength) - 1;
+    return _elapsedTimeScaled;
   }
 }

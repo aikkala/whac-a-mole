@@ -63,9 +63,6 @@ namespace UserInTheBox
         {
             // Update reward
             CalculateReward();
-
-            // Calculate how much time has elapsed in this round (scaled [-1, 1])
-            CalculateTimeFeature();
             
             // Update finished
             _isFinished = sequenceManager.stateMachine.currentState.Equals(GameState.Ready);
@@ -94,15 +91,9 @@ namespace UserInTheBox
             return _reward;
         }
 
-        private void CalculateTimeFeature()
-        {
-            // Calculate how much time has elapsed in this round (scaled [-1, 1])
-            _elapsedTimeScaled = (float)(((Time.time - sequenceManager._roundStart) / sequenceManager.playParameters.roundLength) - 0.5) * 2;
-        }
-
         public float GetTimeFeature()
         {
-            return _elapsedTimeScaled;
+            return sequenceManager.GetTimeFeature();
         }
 
         public bool IsFinished()
