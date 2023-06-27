@@ -27,7 +27,7 @@ namespace UserInTheBox
             if (_useRewardSplines)
             {
                 var _xmax = 0.8f;  //*100  #initial/maximum distance that can be typically reached; used to scale entire reward term relative to other rewards
-                var _ymax = -1.0f;  //minimum negative reward; used to scale entire reward term relative to other rewards
+                var _ymax = -0.1f;  //minimum negative reward; used to scale entire reward term relative to other rewards
                 // var _xeps = _playParameters.targetSize[1];
                 var _xeps = 0.025f;  //*100  #"sufficient" distance to fulfill the pointing task (typically, this corresponds to the target radius); often, if dist<=_xeps (for the first time), an additional bonus reward is given
                 var _yeps = -0.0f;  //-0.05  #reward given at target boundary (WARNING: needs to be non-positive!); should be chosen between 10%*_ymax and _ymin=0
