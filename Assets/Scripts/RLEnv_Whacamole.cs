@@ -9,7 +9,7 @@ namespace UserInTheBox
         // This class implements the RL environment for the Whacamole game.
 
         public SequenceManager sequenceManager;
-        private float _previousPoints, _initialPoints, _elapsedTimeScaled;
+        private float _previousPoints, _initialPoints, _previousContacts, _initialContacts, _elapsedTimeScaled;
         private Transform _marker;
         private string _condition;
         private int _fixedSeed;
@@ -18,6 +18,8 @@ namespace UserInTheBox
         {
             _initialPoints = sequenceManager.Points;
             _previousPoints = _initialPoints;
+            _initialContacts = sequenceManager.Contacts;
+            _previousContacts = _initialContacts;
             _marker = simulatedUser.rightHandController.Find("Hammer/marker").transform;
             
         }
@@ -62,6 +64,11 @@ namespace UserInTheBox
             int points = sequenceManager.Points;
             _reward = (points - _previousPoints)*10;
             _previousPoints = points;
+
+            // Get points for unsuccesful contacts as well
+            int contacts = sequenceManager.Contacts;
+            _reward += (contacts - _previousContacts)*2;
+            _previousContacts = contacts;
             
             // Also calculate distance component
             foreach (var target in sequenceManager.targetArea.GetComponentsInChildren<Target>())

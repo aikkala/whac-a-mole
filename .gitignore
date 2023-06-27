@@ -73,3 +73,6 @@ crashlytics-build.properties
 
 # VSCode Checkpoints
 *-checkpoint.cs
+
+# Own Testing Directories
+_testing/

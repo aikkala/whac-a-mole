@@ -65,6 +65,14 @@ public class SequenceManager : MonoBehaviour {
   private int _punches;
   private int _misses;
   private int _contacts;
+  public int Contacts
+  {
+    get => _contacts;
+    private set
+    {
+      _contacts = value;
+    }
+  }
   
   // Start time
   private float _roundStart;
