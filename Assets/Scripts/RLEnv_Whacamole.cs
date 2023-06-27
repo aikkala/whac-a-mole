@@ -9,6 +9,8 @@ namespace UserInTheBox
         // This class implements the RL environment for the Whacamole game.
 
         public SequenceManager sequenceManager;
+        public Func<float, float> _distRewardFunc;
+        public bool _useRewardSplines=true;
         private float _previousPoints, _initialPoints, _previousContacts, _initialContacts, _elapsedTimeScaled;
         private Transform _marker;
         private string _condition;
@@ -21,6 +23,26 @@ namespace UserInTheBox
             _initialContacts = sequenceManager.Contacts;
             _previousContacts = _initialContacts;
             _marker = simulatedUser.rightHandController.Find("Hammer/marker").transform;
+
+            if (_useRewardSplines)
+            {
+                var _xmax = 0.8f;  //*100  #initial/maximum distance that can be typically reached; used to scale entire reward term relative to other rewards
+                var _ymax = -1.0f;  //minimum negative reward; used to scale entire reward term relative to other rewards
+                // var _xeps = _playParameters.targetSize[1];
+                var _xeps = 0.025f;  //*100  #"sufficient" distance to fulfill the pointing task (typically, this corresponds to the target radius); often, if dist<=_xeps (for the first time), an additional bonus reward is given
+                var _yeps = -0.0f;  //-0.05  #reward given at target boundary (WARNING: needs to be non-positive!); should be chosen between 10%*_ymax and _ymin=0
+                var _xref = 0.3f;  //*100  #"expected" distance; used to scale gradients of this reward term appropriately
+                // we set _positive_only to true, as otherwise the maximum distance reward of zero is also given whenever a target disappears but the next ones are not available yet (happens quite often in the easy condition with only one target at once)
+                var _positive_only = true;  //whether to ensure that all reward terms are non-negative (WARNING: non-negative values only guaranteed if initial distance _xmax is the maximum reachable distance!)
+
+                var curve = new HermiteCurve();
+                curve.Initialise(maxDist:_xmax, minReward:_ymax, epsDist:_xeps, epsReward:_yeps, refDist:_xref, positiveOnly:_positive_only);
+                _distRewardFunc = curve.Evaluate;
+            }
+            else
+            {
+                _distRewardFunc = dist => (float)(Math.Exp(-10*dist)-1) / 10;
+            }
             
         }
 
@@ -76,7 +98,11 @@ namespace UserInTheBox
                 if (target.stateMachine.currentState == TargetState.Alive)
                 {
                     var dist = Vector3.Distance(target.transform.position, _marker.position);
-                    _reward += (float)(Math.Exp(-10*dist)-1) / 10;
+                    // _reward += (float)(Math.Exp(-10*dist)-1) / 10;
+                    _reward += _distRewardFunc(dist);
+
+                    // Console.WriteLine("dist: " + dist);
+                    // Console.WriteLine("reward: " + _distRewardFunc(dist));
                 }
             }
         }
