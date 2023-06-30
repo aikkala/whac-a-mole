@@ -9,12 +9,13 @@ namespace UserInTheBox
         // This class implements the RL environment for the Whacamole game.
 
         public SequenceManager sequenceManager;
-        public Func<float, float> _distRewardFunc;
-        public bool _useRewardSplines=true;
+        [SerializeField] private Func<float, float> _distRewardFunc;
+        [SerializeField] private bool _useRewardSplines=false;
         private float _previousPoints, _initialPoints, _previousContacts, _initialContacts, _elapsedTimeScaled;
         private Transform _marker;
         private string _condition;
         private int _fixedSeed;
+        private bool _debug;
 
         public override void InitialiseReward()
         {
@@ -48,9 +49,11 @@ namespace UserInTheBox
 
         public override void InitialiseGame()
         {
-            
+            // Check if debug mode is enabled
+            _debug = Application.isEditor;  //UitBUtils.GetOptionalArgument("debug");
+
             // Get game variant and level
-            if (!simulatedUser.isDebug())
+            if (!_debug)
             {
                 _condition = UitBUtils.GetKeywordArgument("condition");
                 _logging = UitBUtils.GetOptionalArgument("logging");
