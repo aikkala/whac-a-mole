@@ -4440,7 +4440,7 @@ MonoBehaviour:
   simulatedUser: {fileID: 69392035}
   logger: {fileID: 1321310259}
   sequenceManager: {fileID: 358941410}
-  _useRewardSplines: 1
+  _useRewardSplines: 0
 --- !u!1 &738878423
 GameObject:
   m_ObjectHideFlags: 0
