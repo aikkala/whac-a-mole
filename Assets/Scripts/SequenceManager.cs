@@ -382,7 +382,7 @@ public class SequenceManager : MonoBehaviour {
     
     // Initialise play
     playParameters.Initialise();
-
+    
     // Display target area
     targetArea.gameObject.SetActive(true);
     

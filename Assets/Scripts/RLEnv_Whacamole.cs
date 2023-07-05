@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
-
+using Random = UnityEngine.Random;
 
 namespace UserInTheBox
 {
@@ -16,7 +17,9 @@ namespace UserInTheBox
         private string _condition;
         private int _fixedSeed;
         private bool _debug;
-
+        private List<String> _usedConditions;
+        private int _conditionIndex;
+        
         public override void InitialiseReward()
         {
             _initialPoints = sequenceManager.Points;
@@ -69,7 +72,7 @@ namespace UserInTheBox
             }
             else
             {
-                _condition = "medium";
+                _condition = "random-easy";  //"medium";
                 _fixedSeed = 0;
                 _logging = false;
             }
@@ -117,10 +120,48 @@ namespace UserInTheBox
 
 
         public override void Reset()
-        {
+        {            
             // Set play level
-            sequenceManager.playParameters.condition = _condition;
+            if (!_condition.StartsWith("random"))
+            {
+                sequenceManager.playParameters.condition = _condition;
+            }
+            else
+            {
+                // Randomly select condition
+                if (_condition == "random-easy")
+                {
+                    _usedConditions = new List<String> { "low-easy", "easy", "high-easy" };
+                    _conditionIndex = Random.Range(0, _usedConditions.Count);
+                }
+                else
+                {
+                    _usedConditions = new List<String> { "low-medium", "medium", "high-medium" };
+                    _conditionIndex = Random.Range(0, _usedConditions.Count);
+                }
+                sequenceManager.playParameters.condition = _usedConditions[_conditionIndex];
+            }
             sequenceManager.playParameters.Initialise(_fixedSeed);
+            
+                
+            // Override headset position of simulated user, if necessary
+            if (simulatedUser.enabled)
+            {
+                overrideHeadsetOrientation = true;
+                
+                if (sequenceManager.playParameters.condition.StartsWith("low"))
+                {
+                    simulatedUserHeadsetOrientation = new Quaternion(-0.258819f, 0f, 0f, -0.9659258f);
+                }
+                else if (sequenceManager.playParameters.condition.StartsWith("high"))
+                {
+                    simulatedUserHeadsetOrientation = new Quaternion(0.258819f, 0f, 0f, -0.9659258f);
+                }
+                else
+                {
+                    simulatedUserHeadsetOrientation = new Quaternion(-0.871556774f, 0f, 0f, -0.99619472f);
+                }
+            }
             
             // Visit Ready state, as some important stuff will be set (on exit)
             sequenceManager.stateMachine.GotoState(GameState.Ready);
