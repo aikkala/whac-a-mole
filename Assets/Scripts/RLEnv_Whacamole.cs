@@ -72,7 +72,7 @@ namespace UserInTheBox
             }
             else
             {
-                _condition = "random-easy";  //"medium";
+                _condition = "medium";  //"random";
                 _fixedSeed = 0;
                 _logging = false;
             }
@@ -159,7 +159,7 @@ namespace UserInTheBox
                 }
                 else
                 {
-                    simulatedUserHeadsetOrientation = new Quaternion(-0.871556774f, 0f, 0f, -0.99619472f);
+                    simulatedUserHeadsetOrientation = new Quaternion(-0.0871556774f, 0f, 0f, -0.99619472f);
                 }
             }
             
