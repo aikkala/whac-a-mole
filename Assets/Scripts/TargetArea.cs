@@ -99,11 +99,11 @@ public class TargetArea : MonoBehaviour
         for (int i = 0; i < _gridWidth; i++)
         {
             float x = -(_playParameters.targetAreaWidth / 2) + targetRadius +
-                      i*(_playParameters.targetAreaWidth - targetDiameter) / (_gridWidth-1);
+                      i*(_playParameters.targetAreaWidth - targetDiameter) / ((_gridWidth-1)>0?(_gridWidth-1):1);
             for (int j = 0; j < _gridHeight; j++)
             {
                 float y = (_playParameters.targetAreaHeight / 2) - targetRadius -
-                          j*(_playParameters.targetAreaHeight - targetDiameter) / (_gridHeight-1);
+                          j*(_playParameters.targetAreaHeight - targetDiameter) / ((_gridHeight-1)>0?(_gridHeight-1):1);
 
                 // Add position and ID
                 _gridPositions[j, i] = new Tuple<float, float>(x, y);
