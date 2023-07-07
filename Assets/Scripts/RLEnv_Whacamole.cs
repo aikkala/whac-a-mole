@@ -134,6 +134,11 @@ namespace UserInTheBox
                     _usedConditions = new List<String> { "low-easy", "easy", "high-easy" };
                     _conditionIndex = Random.Range(0, _usedConditions.Count);
                 }
+                else if (_condition == "random-easy-medium")
+                {
+                    _usedConditions = new List<String> { "low-easy", "easy", "high-easy", "low-medium", "medium", "high-medium" };
+                    _conditionIndex = Random.Range(0, _usedConditions.Count);
+                }
                 else
                 {
                     _usedConditions = new List<String> { "low-medium", "medium", "high-medium" };
