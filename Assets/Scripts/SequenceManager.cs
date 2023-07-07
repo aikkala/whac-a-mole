@@ -73,6 +73,8 @@ public class SequenceManager : MonoBehaviour {
       _contacts = value;
     }
   }
+  public float lastContactVelocity = 0f;
+  public float lastHitVelocity = 0f;
   
   // Start time
   private float _roundStart;
@@ -187,6 +189,7 @@ public class SequenceManager : MonoBehaviour {
                                          ", grid ID " + target.GridID + 
                                          ", velocity " + UitBUtils.Vector3ToString(velocity, " "));
     }
+    lastHitVelocity = velocity.z;
   }
 
   public void RecordContact(Target target, Vector3 velocity)
@@ -198,6 +201,7 @@ public class SequenceManager : MonoBehaviour {
                                          ", grid ID " + target.GridID +
                                          ", velocity " + UitBUtils.Vector3ToString(velocity, " "));
     }
+    lastContactVelocity = velocity.z;
   }
   
   public void RecordMiss(Target target)

@@ -95,7 +95,9 @@ namespace UserInTheBox
 
             // Get points for unsuccesful contacts as well
             int contacts = sequenceManager.Contacts;
-            _reward += (contacts - _previousContacts)*2;
+            float contactVelocity = sequenceManager.lastContactVelocity;
+            contactVelocity = contactVelocity > 0 ? contactVelocity : 0;
+            _reward += (contacts - _previousContacts)*2*(contactVelocity/0.8f);
             _previousContacts = contacts;
             
             // Also calculate distance component
