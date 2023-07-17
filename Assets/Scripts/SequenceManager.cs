@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.XR.CoreUtils;
 using UnityEngine;
@@ -73,6 +74,13 @@ public class SequenceManager : MonoBehaviour {
       _contacts = value;
     }
   }
+  private List<int> _punches_gridID;
+  private List<int> _misses_gridID;
+  private List<int> _contacts_gridID;
+  public bool adaptiveTargetSpawns = true;
+  private float _uniformProb = 0.5f;
+  private List<float> _spawnProbs_gridID;
+
   public float lastContactVelocity = 0f;
   public float lastHitVelocity = 0f;
   
@@ -183,6 +191,7 @@ public class SequenceManager : MonoBehaviour {
   {
     Points = _points + target.points;
     _punches += 1;
+    _punches_gridID[target.GridID] += 1;
     if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "target_hit, target ID " + target.ID +
@@ -195,6 +204,7 @@ public class SequenceManager : MonoBehaviour {
   public void RecordContact(Target target, Vector3 velocity)
   {
     _contacts += 1;
+    _contacts_gridID[target.GridID] += 1;
     if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "target_contact, target ID " + target.ID +
@@ -207,6 +217,8 @@ public class SequenceManager : MonoBehaviour {
   public void RecordMiss(Target target)
   {
     _misses += 1;
+
+    _misses_gridID[target.GridID] += 1;
     if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "target_miss, target ID " + target.ID +
@@ -272,6 +284,9 @@ public class SequenceManager : MonoBehaviour {
     _punches = 0;
     _misses = 0;
     _contacts = 0;
+    _punches_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();
+    _misses_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();
+    _contacts_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();
     _roundStart = Time.time;
     _terminate = false;
     
@@ -320,7 +335,14 @@ public class SequenceManager : MonoBehaviour {
     else
     {
       // Continue play; potentially spawn a new target and/or a new bomb
-      targetArea.MaybeSpawnTarget();
+      if (adaptiveTargetSpawns)
+      {
+        targetArea.MaybeSpawnTarget(_spawnProbs_gridID);
+      }
+      else
+      {
+        targetArea.MaybeSpawnTarget();
+      }
     }
   }
 
@@ -345,6 +367,31 @@ public class SequenceManager : MonoBehaviour {
       logger.Finalise("states");
       logger.Finalise("events");
     }
+
+    if (adaptiveTargetSpawns)
+    {
+      // // Store target hit rates from last run
+      // _hitratio_gridID = new List<float>();
+      // for (int i = 0; i < _contacts_gridID.Count; i++)
+      // {
+      //   _hitratio_gridID[i] = (float)_punches_gridID[i] / (_punches_gridID[i] + _misses_gridID[i]);
+      // }
+      
+      // Compute target spawn probabilities for all grid IDs based on fail rates from last run
+      _spawnProbs_gridID = Enumerable.Repeat(0.0f, targetArea.numberGridPosition).ToList();
+      for (int i = 0; i < _spawnProbs_gridID.Count; i++)
+      {
+        _spawnProbs_gridID[i] = (float)_misses_gridID[i] / ((_punches_gridID[i] + _misses_gridID[i]) > 0 ? (_punches_gridID[i] + _misses_gridID[i]) : 1);
+      }
+      // Add constant "base probability" to each target
+      float pt = _spawnProbs_gridID.Sum();
+      int pn = _contacts_gridID.Count;
+      for (int i = 0; i < pn; i++)
+      {
+        _spawnProbs_gridID[i] += (_uniformProb / (1.0f - _uniformProb)) * pt / pn;
+      }
+    }
+
     
     // Increment condition counter
     if (_isExperiment)

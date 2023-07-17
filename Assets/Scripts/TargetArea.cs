@@ -16,6 +16,10 @@ public class TargetArea : MonoBehaviour
     private int _numTargets;
     private int _numBombs;
     public Dictionary<int, Target> objects;
+    public int numberGridPosition
+    {
+        get => _gridWidth*_gridHeight;
+    }
     private int _gridWidth, _gridHeight;
     private Tuple<float, float>[,] _gridPositions;
     private int[,] _gridID;
@@ -33,6 +37,42 @@ public class TargetArea : MonoBehaviour
             var tmp = ts[i];
             ts[i] = ts[r];
             ts[r] = tmp;
+        }
+    }
+
+    public static void Shuffle(IList<Tuple<int, int>> ts, List<float> probs, int[,] gridID) {
+        // Get random index position according to a list of (non-normalized) probabilities/counts
+        
+        var count = ts.Count;
+        var last = count - 1;
+
+        // Get total probability
+        float pt = 0.0f;
+        for (var j = 0; j < count; ++j) {
+            var fp = ts[j];
+            pt += probs[gridID[fp.Item1, fp.Item2]];
+        }
+        for (var i = 0; i < last; ++i) {
+            var rf = Random.Range(0.0f, pt);
+            float sum = 0.0f;
+            int r;
+            for (r = i; r < count; ++r) {
+                var fp = ts[r];
+                sum += probs[gridID[fp.Item1, fp.Item2]];
+                if(rf <= sum){
+                    break;
+                }
+            }
+            var tmp = ts[i];
+            ts[i] = ts[r];
+            ts[r] = tmp;
+
+            // var tmp2 = probs[ts[i]];
+            // probs[i] = probs[r];
+            // probs[r] = tmp2;
+            
+            //remove probability of selected element from total probability
+            pt -= probs[r];
         }
     }
 
@@ -107,7 +147,7 @@ public class TargetArea : MonoBehaviour
 
                 // Add position and ID
                 _gridPositions[j, i] = new Tuple<float, float>(x, y);
-                var id = j * _gridHeight + i;
+                var id = j * _gridWidth + i;
                 _gridID[j, i] = id;
                 _gridID2Pos[id] = new Tuple<int, int>(j, i);
                 
@@ -146,7 +186,7 @@ public class TargetArea : MonoBehaviour
         );
     }
     
-    public bool MaybeSpawnTarget()
+    public bool MaybeSpawnTarget(List<float> spawnProbs_gridID = null)
     {
         // Don't sample new targets if there are enough already, or if we're replaying
         if (_numTargets >= _playParameters.maxTargets || replayer.enabled)
@@ -158,14 +198,14 @@ public class TargetArea : MonoBehaviour
         if (Time.time > _spawnBan /*|| _numTargets == 0*/ )
         {
 
-            SpawnTarget();
+            SpawnTarget(-1, spawnProbs_gridID);
             return true;
         }
 
         return false;
     }
 
-    public void SpawnTarget(int gridId=-1)
+    public void SpawnTarget(int gridId=-1, List<float> spawnProbs_gridID = null)
     {
         // Instantiate a new target
         Target newTarget = Instantiate(target, transform.position, transform.rotation, transform);
@@ -180,7 +220,7 @@ public class TargetArea : MonoBehaviour
         Tuple<int, int> gridPos;
         if (gridId == -1)
         {
-            gridPos = SampleGridPosition();
+            gridPos = SampleGridPosition(spawnProbs_gridID);
         }
         else
         {
@@ -294,7 +334,7 @@ public class TargetArea : MonoBehaviour
         return pos;
     }
 
-    private Tuple<int, int> SampleGridPosition()
+    private Tuple<int, int> SampleGridPosition(List<float> spawnProbs_gridID = null)
     {
         // Note! Works currently only on 2D grids
         
@@ -305,7 +345,14 @@ public class TargetArea : MonoBehaviour
         }
         
         // Shuffle the list and return first element
-        Shuffle(_freePositions);
+        if (spawnProbs_gridID is object)
+        {
+            Shuffle(_freePositions, spawnProbs_gridID, _gridID);
+        }
+        else
+        {
+            Shuffle(_freePositions);
+        }
         Tuple<int, int> gridPos = _freePositions[0];
         _freePositions.RemoveAt(0);
         
