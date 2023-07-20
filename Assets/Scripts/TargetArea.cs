@@ -55,11 +55,13 @@ public class TargetArea : MonoBehaviour
         for (var i = 0; i < last; ++i) {
             var rf = Random.Range(0.0f, pt);
             float sum = 0.0f;
-            int r;
-            for (r = i; r < count; ++r) {
-                var fp = ts[r];
+            int r=count>0 ? (count-1) : 0;
+            for (var j = i; j < count; j++) {
+                var fp = ts[j];
                 sum += probs[gridID[fp.Item1, fp.Item2]];
-                if(rf <= sum){
+                if (rf <= sum)
+                {
+                    r = j;
                     break;
                 }
             }

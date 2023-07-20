@@ -284,9 +284,18 @@ public class SequenceManager : MonoBehaviour {
     _punches = 0;
     _misses = 0;
     _contacts = 0;
-    _punches_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();
-    _misses_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();
-    _contacts_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();
+    if (_punches_gridID is null)
+    {
+      _punches_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();      
+    }
+    if (_misses_gridID is null)
+    {
+      _misses_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();
+    }
+    if (_contacts_gridID is null)
+    {
+      _contacts_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();
+    }
     _roundStart = Time.time;
     _terminate = false;
     
@@ -317,6 +326,11 @@ public class SequenceManager : MonoBehaviour {
         _spawnProbs_gridID[i] += (_uniformProb / (1.0f - _uniformProb)) * ((pt / pn) > 0 ? (pt / pn) : 1);
       }
     }
+    
+    // Reset target event counters (needs to be done after spawn probabilities are calculated)
+    _punches_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();
+    _misses_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();
+    _contacts_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();
 
     // Show scoreboard
     if (_showScoreboard)
