@@ -15,6 +15,7 @@ namespace UserInTheBox
         private float _previousPoints, _initialPoints, _previousContacts, _initialContacts, _elapsedTimeScaled;
         private Transform _marker;
         private string _condition;
+        private bool _denseGameReward;
         private int _fixedSeed;
         private bool _debug;
         private List<String> _usedConditions;
@@ -60,6 +61,8 @@ namespace UserInTheBox
             {
                 _condition = UitBUtils.GetKeywordArgument("condition");
                 _logging = UitBUtils.GetOptionalArgument("logging");
+                sequenceManager.adaptiveTargetSpawns = UitBUtils.GetOptionalArgument("adaptive");
+                _denseGameReward = !UitBUtils.GetOptionalArgument("sparse");
 
                 string fixedSeed = UitBUtils.GetOptionalKeywordArgument("fixedSeed", "0");
                 // Try to parse given fixed seed string to int
@@ -73,6 +76,7 @@ namespace UserInTheBox
             else
             {
                 _condition = "medium";  //"random";
+                _denseGameReward = true;
                 _fixedSeed = 0;
                 _logging = false;
             }
@@ -93,24 +97,27 @@ namespace UserInTheBox
             _reward = (points - _previousPoints)*10;
             _previousPoints = points;
 
-            // Get points for unsuccesful contacts as well
-            int contacts = sequenceManager.Contacts;
-            float contactVelocity = sequenceManager.lastContactVelocity;
-            contactVelocity = contactVelocity > 0 ? contactVelocity : 0;
-            _reward += (contacts - _previousContacts)*2*(contactVelocity/0.8f);
-            _previousContacts = contacts;
-            
-            // Also calculate distance component
-            foreach (var target in sequenceManager.targetArea.GetComponentsInChildren<Target>())
+            if (_denseGameReward)
             {
-                if (target.stateMachine.currentState == TargetState.Alive)
+                // Get points for unsuccessful contacts as well
+                int contacts = sequenceManager.Contacts;
+                float contactVelocity = sequenceManager.lastContactVelocity;
+                contactVelocity = contactVelocity > 0 ? contactVelocity : 0;
+                _reward += (contacts - _previousContacts)*2*(contactVelocity/0.8f);
+                _previousContacts = contacts;
+                
+                // Also calculate distance component
+                foreach (var target in sequenceManager.targetArea.GetComponentsInChildren<Target>())
                 {
-                    var dist = Vector3.Distance(target.transform.position, _marker.position);
-                    // _reward += (float)(Math.Exp(-10*dist)-1) / 10;
-                    _reward += _distRewardFunc(dist);
+                    if (target.stateMachine.currentState == TargetState.Alive)
+                    {
+                        var dist = Vector3.Distance(target.transform.position, _marker.position);
+                        // _reward += (float)(Math.Exp(-10*dist)-1) / 10;
+                        _reward += _distRewardFunc(dist);
 
-                    // Console.WriteLine("dist: " + dist);
-                    // Console.WriteLine("reward: " + _distRewardFunc(dist));
+                        // Console.WriteLine("dist: " + dist);
+                        // Console.WriteLine("reward: " + _distRewardFunc(dist));
+                    }
                 }
             }
         }

@@ -77,7 +77,7 @@ public class SequenceManager : MonoBehaviour {
   private List<int> _punches_gridID;
   private List<int> _misses_gridID;
   private List<int> _contacts_gridID;
-  public bool adaptiveTargetSpawns = true;
+  public bool adaptiveTargetSpawns = false;
   private float _uniformProb = 0.5f;
   private List<float> _spawnProbs_gridID;
 
