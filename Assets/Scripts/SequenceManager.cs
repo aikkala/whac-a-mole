@@ -293,6 +293,31 @@ public class SequenceManager : MonoBehaviour {
     // Reset target id counter
     targetArea.Reset();
     
+    // Set target probabilities
+    if (adaptiveTargetSpawns)  //TODO: move this code to TargetArea.cs
+    {
+      // // Store target hit rates from last run
+      // _hitratio_gridID = new List<float>();
+      // for (int i = 0; i < _contacts_gridID.Count; i++)
+      // {
+      //   _hitratio_gridID[i] = (float)_punches_gridID[i] / (_punches_gridID[i] + _misses_gridID[i]);
+      // }
+      
+      // Compute target spawn probabilities for all grid IDs based on fail rates from last run
+      _spawnProbs_gridID = Enumerable.Repeat(0.0f, targetArea.numberGridPosition).ToList();
+      for (int i = 0; i < _spawnProbs_gridID.Count; i++)
+      {
+        _spawnProbs_gridID[i] = (float)_misses_gridID[i] / ((_punches_gridID[i] + _misses_gridID[i]) > 0 ? (_punches_gridID[i] + _misses_gridID[i]) : 1);
+      }
+      // Add constant "base probability" to each target
+      float pt = _spawnProbs_gridID.Sum();
+      int pn = _contacts_gridID.Count;
+      for (int i = 0; i < pn; i++)
+      {
+        _spawnProbs_gridID[i] += (_uniformProb / (1.0f - _uniformProb)) * ((pt / pn) > 0 ? (pt / pn) : 1);
+      }
+    }
+
     // Show scoreboard
     if (_showScoreboard)
     {
@@ -367,31 +392,6 @@ public class SequenceManager : MonoBehaviour {
       logger.Finalise("states");
       logger.Finalise("events");
     }
-
-    if (adaptiveTargetSpawns)
-    {
-      // // Store target hit rates from last run
-      // _hitratio_gridID = new List<float>();
-      // for (int i = 0; i < _contacts_gridID.Count; i++)
-      // {
-      //   _hitratio_gridID[i] = (float)_punches_gridID[i] / (_punches_gridID[i] + _misses_gridID[i]);
-      // }
-      
-      // Compute target spawn probabilities for all grid IDs based on fail rates from last run
-      _spawnProbs_gridID = Enumerable.Repeat(0.0f, targetArea.numberGridPosition).ToList();
-      for (int i = 0; i < _spawnProbs_gridID.Count; i++)
-      {
-        _spawnProbs_gridID[i] = (float)_misses_gridID[i] / ((_punches_gridID[i] + _misses_gridID[i]) > 0 ? (_punches_gridID[i] + _misses_gridID[i]) : 1);
-      }
-      // Add constant "base probability" to each target
-      float pt = _spawnProbs_gridID.Sum();
-      int pn = _contacts_gridID.Count;
-      for (int i = 0; i < pn; i++)
-      {
-        _spawnProbs_gridID[i] += (_uniformProb / (1.0f - _uniformProb)) * pt / pn;
-      }
-    }
-
     
     // Increment condition counter
     if (_isExperiment)
