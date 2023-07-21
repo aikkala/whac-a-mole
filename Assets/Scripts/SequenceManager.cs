@@ -95,6 +95,7 @@ public class SequenceManager : MonoBehaviour {
   
   // Logger
   public UserInTheBox.Logger logger;
+  private bool _logger_initialised = false;
   
   // Target area where targets are spawned
   public TargetArea targetArea;
@@ -481,11 +482,15 @@ public class SequenceManager : MonoBehaviour {
     // Initialise log files
     if (logger.enabled)
     {
-      // Create folder for this experiment
-      logger.GenerateExperimentFolder(playParameters.condition);
-      
-      logger.Initialise("states");
-      logger.Initialise("events");
+      if (!_logger_initialised)
+      {
+        // Create folder for this experiment
+        logger.GenerateExperimentFolder(playParameters.condition);
+        
+        logger.Initialise("states");
+        logger.Initialise("events");
+        _logger_initialised = true;
+      }
       
       // Write level and random seed
       logger.Push("states", "condition " + playParameters.condition + 
