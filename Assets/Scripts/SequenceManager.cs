@@ -74,9 +74,19 @@ public class SequenceManager : MonoBehaviour {
       _contacts = value;
     }
   }
+  private int _firstContacts;
+  public int FirstContacts
+  {
+    get => _firstContacts;
+    private set
+    {
+      _firstContacts = value;
+    }
+  }
   private List<int> _punches_gridID;
   private List<int> _misses_gridID;
   private List<int> _contacts_gridID;
+  private List<int> _contactlessTargets = new List<int>();
   public bool adaptiveTargetSpawns = false;
   private float _uniformProb = 0.5f;
   private List<float> _spawnProbs_gridID;
@@ -181,6 +191,7 @@ public class SequenceManager : MonoBehaviour {
 
   public void RecordSpawn(Target target) 
   {
+    _contactlessTargets.Add(target.ID);
     if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "target_spawn, target ID " + target.ID +
@@ -193,26 +204,45 @@ public class SequenceManager : MonoBehaviour {
     Points = _points + target.points;
     _punches += 1;
     _punches_gridID[target.GridID] += 1;
+    _contactlessTargets.Remove(target.ID);
     if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "target_hit, target ID " + target.ID +
                                          ", grid ID " + target.GridID + 
                                          ", velocity " + UitBUtils.Vector3ToString(velocity, " "));
     }
-    lastHitVelocity = velocity.z;
+    if (playParameters.condition.StartsWith("low"))
+    {
+      lastHitVelocity = -velocity.y;  //use downward velocity for low conditions, as used for playParameter.velocityThreshold in this case
+    }
+    else {
+      lastHitVelocity = velocity.z;  //use forward velocity for all other conditions
+    }
   }
 
   public void RecordContact(Target target, Vector3 velocity)
   {
     _contacts += 1;
     _contacts_gridID[target.GridID] += 1;
+    if (_contactlessTargets.Contains(target.ID))
+    {
+      _firstContacts += 1;
+      _contactlessTargets.Remove(target.ID);
+    }
+
     if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "target_contact, target ID " + target.ID +
                                          ", grid ID " + target.GridID +
                                          ", velocity " + UitBUtils.Vector3ToString(velocity, " "));
     }
-    lastContactVelocity = velocity.z;
+    if (playParameters.condition.StartsWith("low"))
+    {
+      lastContactVelocity = -velocity.y;  //use downward velocity for low conditions, as used for playParameter.velocityThreshold in this case
+    }
+    else {
+      lastContactVelocity = velocity.z;  //use forward velocity for all other conditions
+    }
   }
   
   public void RecordMiss(Target target)
@@ -220,6 +250,7 @@ public class SequenceManager : MonoBehaviour {
     _misses += 1;
 
     _misses_gridID[target.GridID] += 1;
+    _contactlessTargets.Remove(target.ID);
     if (logger.enabled)
     {
       logger.PushWithTimestamp("events", "target_miss, target ID " + target.ID +
@@ -285,6 +316,7 @@ public class SequenceManager : MonoBehaviour {
     _punches = 0;
     _misses = 0;
     _contacts = 0;
+    _firstContacts = 0;
     if (_punches_gridID is null)
     {
       _punches_gridID = Enumerable.Repeat(0, targetArea.numberGridPosition).ToList();      

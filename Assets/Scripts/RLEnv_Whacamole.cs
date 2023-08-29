@@ -99,8 +99,8 @@ namespace UserInTheBox
 
             if (_denseGameReward)
             {
-                // Get points for unsuccessful contacts as well
-                int contacts = sequenceManager.Contacts;
+                // Get points for first unsuccessful contacts as well
+                int contacts = sequenceManager.FirstContacts;
                 float contactVelocity = sequenceManager.lastContactVelocity;
                 contactVelocity = contactVelocity > 0 ? contactVelocity : 0;
                 _reward += (contacts - _previousContacts)*2*(contactVelocity/0.8f);
