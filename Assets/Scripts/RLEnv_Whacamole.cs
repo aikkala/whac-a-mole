@@ -94,7 +94,9 @@ namespace UserInTheBox
         {
             // Get hit points
             int points = sequenceManager.Points;
+            _logDict["Points"] = points;
             _reward = (points - _previousPoints)*10;
+            _logDict["RewardGame"] = _reward;
             _previousPoints = points;
 
             if (_denseGameReward)
@@ -103,22 +105,26 @@ namespace UserInTheBox
                 int contacts = sequenceManager.FirstContacts;
                 float contactVelocity = sequenceManager.lastContactVelocity;
                 contactVelocity = contactVelocity > 0 ? contactVelocity : 0;
-                _reward += (contacts - _previousContacts)*2*(contactVelocity/0.8f);
+                float _unsuccessfulContactReward = (contacts - _previousContacts)*2*(contactVelocity/0.8f);
+                _logDict["RewardUnsuccessfulContact"] = _unsuccessfulContactReward;
+                _reward += _unsuccessfulContactReward;
                 _previousContacts = contacts;
                 
                 // Also calculate distance component
+                float _distanceReward = 0f;
                 foreach (var target in sequenceManager.targetArea.GetComponentsInChildren<Target>())
                 {
                     if (target.stateMachine.currentState == TargetState.Alive)
                     {
                         var dist = Vector3.Distance(target.transform.position, _marker.position);
-                        // _reward += (float)(Math.Exp(-10*dist)-1) / 10;
-                        _reward += _distRewardFunc(dist);
+                        // _distanceReward += (float)(Math.Exp(-10*dist)-1) / 10;
+                        _distanceReward += _distRewardFunc(dist);
 
                         // Console.WriteLine("dist: " + dist);
-                        // Console.WriteLine("reward: " + _distRewardFunc(dist));
+                        // Console.WriteLine("reward: " + _distanceReward);
                     }
                 }
+                _reward += _distanceReward;
             }
         }
 
