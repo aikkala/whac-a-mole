@@ -86,6 +86,12 @@ namespace UserInTheBox
 
         public override void UpdateIsFinished()
         {
+            // Add additional logs
+            for (int i = 0; i < sequenceManager.targetArea.numberGridPosition; i++)
+            {
+                _logDict[string.Format("failrateTarget{0}", i)] = (float)sequenceManager.MissesGridID[i] / ((sequenceManager.PunchesGridID[i] + sequenceManager.MissesGridID[i]) > 0 ? (sequenceManager.PunchesGridID[i] + sequenceManager.MissesGridID[i]) : 1);
+            }
+
             // Update finished
             _isFinished = sequenceManager.stateMachine.currentState.Equals(GameState.Ready);
         }
@@ -96,7 +102,7 @@ namespace UserInTheBox
             int points = sequenceManager.Points;
             _logDict["Points"] = points;
             _reward = (points - _previousPoints)*10;
-            _logDict["RewardGame"] = _reward;
+            // _logDict["RewardGame"] = _reward;
             _previousPoints = points;
 
             if (_denseGameReward)
@@ -124,6 +130,7 @@ namespace UserInTheBox
                         // Console.WriteLine("reward: " + _distanceReward);
                     }
                 }
+                _logDict["DistanceReward"] = _distanceReward;
                 _reward += _distanceReward;
             }
         }

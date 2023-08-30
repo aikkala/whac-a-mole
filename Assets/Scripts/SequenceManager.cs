@@ -84,8 +84,32 @@ public class SequenceManager : MonoBehaviour {
     }
   }
   private List<int> _punches_gridID;
+  public List<int> PunchesGridID
+  {
+    get => _punches_gridID;
+    private set
+    {
+      _punches_gridID = value;
+    }
+  }
   private List<int> _misses_gridID;
+  public List<int> MissesGridID
+  {
+    get => _misses_gridID;
+    private set
+    {
+      _misses_gridID = value;
+    }
+  }
   private List<int> _contacts_gridID;
+  public List<int> ContactsGridID
+  {
+    get => _contacts_gridID;
+    private set
+    {
+      _contacts_gridID = value;
+    }
+  }
   private List<int> _contactlessTargets = new List<int>();
   public bool adaptiveTargetSpawns = false;
   private float _uniformProb = 0.5f;
