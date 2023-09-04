@@ -80,7 +80,7 @@ public class PlayParameters {
       // velocityThreshold = velocity => velocity.y < -0.424f && velocity.z > 0.424f;
       velocityThreshold = velocity => velocity.y < -0.8f;
     }
-    else if (condition == "mid" || condition == "mid-unconstrained") 
+    else if (condition == "mid-medium" || condition == "mid" || condition == "mid-medium-unconstrained" || condition == "mid-unconstrained") 
     {        
       //should equal "medium"/"medium-unconstrained" conditions
       maxTargets = 3;
