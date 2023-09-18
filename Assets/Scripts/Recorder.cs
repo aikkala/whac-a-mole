@@ -20,12 +20,17 @@ public class Recorder : MonoBehaviour
     private string _mainCameraFolder;
     private string _resolution;
     private bool _debug = false;
+    private bool _redirectEnvCameraToFile = true;
 
     private void Awake()
     {
+        // Check if debug mode is enabled
+        _debug = Application.isEditor || _debug;  //UitBUtils.GetOptionalArgument("debug");
+
         if (_debug)
         {
             enabled = true;
+            _redirectEnvCameraToFile = false;  //needs to be set to true to store envCamera video
             _baseImageFolder = Path.Combine(Application.persistentDataPath, "recording/");
             _resolution = "1280x960";
         }
@@ -61,7 +66,7 @@ public class Recorder : MonoBehaviour
                 _height = 960;
             }
         }
-        else
+        else if (!_debug)
         {
             gameObject.SetActive(false);
         }
@@ -100,17 +105,30 @@ public class Recorder : MonoBehaviour
         Directory.CreateDirectory(_baseImageFolder);
 
         // Also create separate directories for env camera and headset camera
-        Directory.CreateDirectory(_envCameraFolder);
+        if (_redirectEnvCameraToFile) {
+            Directory.CreateDirectory(_envCameraFolder);
+        }
         Directory.CreateDirectory(_mainCameraFolder);
 
         // A running index for image names
         _index = 0;
     }
 
+    public void UpdateEnvCamera(TargetArea targetArea)
+    {
+        if (gameObject.activeSelf) {
+            _envCamera.transform.position = targetArea.transform.position;
+            _envCamera.transform.Translate(0.5f, 0f, -0.5f);
+            _envCamera.transform.LookAt(targetArea.transform);
+        }
+    }
+
     void LateUpdate()
     {
         // Capture first image from the env camera
-        CaptureEnvCameraImage();
+        if (_redirectEnvCameraToFile) {
+            CaptureEnvCameraImage();
+        }
 
         // Then capture image from headset camera
         CaptureMainCameraImage();

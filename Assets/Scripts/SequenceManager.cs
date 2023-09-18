@@ -130,6 +130,9 @@ public class SequenceManager : MonoBehaviour {
   // Logger
   public UserInTheBox.Logger logger;
   private bool _logger_initialised = false;
+
+  // Recorder
+  public Recorder recorder;
   
   // Target area where targets are spawned
   public TargetArea targetArea;
@@ -513,6 +516,9 @@ public class SequenceManager : MonoBehaviour {
     
     // Set target area to correct position
     targetArea.SetPosition(headset);
+
+    // Update env camera view of recorder
+    recorder.UpdateEnvCamera(targetArea);
 
     // Calculate grid mapping (for logging)
     targetArea.CalculateGridMapping();

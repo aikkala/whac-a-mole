@@ -2210,7 +2210,11 @@ MonoBehaviour:
   pauseMenu: {fileID: 410019251}
   endText: {fileID: 1005898659}
   countdownText: {fileID: 576500842}
+  adaptiveTargetSpawns: 0
+  lastContactVelocity: 0
+  lastHitVelocity: 0
   logger: {fileID: 1321310259}
+  recorder: {fileID: 1333132544}
   targetArea: {fileID: 845354828}
 --- !u!4 &358941411
 Transform:
@@ -4439,6 +4443,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   simulatedUser: {fileID: 69392035}
   logger: {fileID: 1321310259}
+  overrideHeadsetOrientation: 0
+  simulatedUserHeadsetOrientation: {x: 0, y: 0, z: 0, w: 0}
   sequenceManager: {fileID: 358941410}
   _useRewardSplines: 0
 --- !u!1 &738878423
