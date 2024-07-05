@@ -1,6 +1,13 @@
-# Whac-a-mole
+# Whac-A-Mole
 
-This game is largely based on another Unity (boxing) exergame, developed by Toni Pesola. Network communication functionality ("Unity-Python bridge" with ZMQ) in UserInTheBox asset) originally developed by Markus Kirjonen.
+A replication of the classic "Whac-A-Mole" arcade game, implemented as a VR game in Unity. This game is largely based on another Unity (boxing) exergame developed by Toni Pesola. 
 
+For game details, see the paper "SIM2VR: Towards Automated Biomechanical Testing in VR" [todo: add link]
 
-When building, if you get an error complaining something about erroneous "guid" for the boxing glove prefab/mesh go to "Assets" -> "Reimport all"
+Screenshot of the game play:
+
+<img src="figs/game-play.png" alt="A VR scene depicting the game play: a green target area is shown in front of the player with three circular targets" width="400"/>
+
+## Troubleshooting
+
+When building, if you get an error complaining something about erroneous "guid" for some prefabs/meshes go to "Assets" -> "Reimport all"
