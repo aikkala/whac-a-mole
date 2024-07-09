@@ -2,7 +2,7 @@
 
 A replication of the classic "Whac-A-Mole" arcade game, implemented as a VR game in Unity. This game is largely based on another Unity (boxing) exergame developed by Toni Pesola. 
 
-For game details, see the paper "SIM2VR: Towards Automated Biomechanical Testing in VR" [todo: add link]
+For game details, see the paper "SIM2VR: Towards Automated Biomechanical Testing in VR" [todo: add link] and [the project repo](https://github.com/fl0fischer/sim2vr.)
 
 Screenshot of the game play:
 
