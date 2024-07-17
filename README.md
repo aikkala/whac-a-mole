@@ -17,24 +17,24 @@ We release a dataset of 18 people playing different variations of the game. See 
 
 The following participant information is available in the spreadsheet: 
 
-- ID
-- age
-- gender
-- VR-exp: experience playing VR games, chosen from "none", "some", "lots"
-- exercise: approximation of how many hours the participant exercises weekly, using a very broad definition of exercise, including, e.g., brisk walking
-- humerus, ulna: approximation of the humerus/ulna bone's length
-- order: order of trials, chosen from "alpha", "bravo", "charlie", "delta", "echo", "foxtrot"
-- full-low, -mid, -high: participant's reported Borg RPE value when considering fatigue felt in the whole body, for target area placement full, mid, or high
-- arm-low, -mid, -high: participant's reported Borg RPE value when considering fatigue felt in the shoulder and arm, for target area placement full, mid, or high
+- **ID**
+- **age**
+- **gender**
+- **VR-exp**: experience playing VR games, chosen from "none", "some", "lots"
+- **exercise**: approximation of how many hours the participant exercises weekly, using a very broad definition of exercise, including, e.g., brisk walking
+- **humerus, ulna**: approximation of the humerus/ulna bone's length
+- **order**: order of trials, chosen from "alpha", "bravo", "charlie", "delta", "echo", "foxtrot"
+- **full-low, -mid, -high**: participant's reported Borg RPE value when considering fatigue felt in the whole body, for target area placement full, mid, or high
+- **arm-low, -mid, -high**: participant's reported Borg RPE value when considering fatigue felt in the shoulder and arm, for target area placement full, mid, or high
 
 ### Trial Order
 
-- alpha: easy, medium, hard or low, mid, high
-- bravo: easy, hard, medium or low, high, mid
-- charlie: medium, easy, hard or mid, low, high
-- delta: medium, hard, easy or mid, high, low
-- echo: hard, easy, medium or high, low, mid
-- foxtrot: hard, medium, easy or high, mid, low
+- **alpha**: easy, medium, hard or low, mid, high
+- **bravo**: easy, hard, medium or low, high, mid
+- **charlie**: medium, easy, hard or mid, low, high
+- **delta**: medium, hard, easy or mid, high, low
+- **echo**: hard, easy, medium or high, low, mid
+- **foxtrot**: hard, medium, easy or high, mid, low
 
 ## Troubleshooting
 
