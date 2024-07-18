@@ -24,7 +24,7 @@ The following participant information is available in the spreadsheet:
 - **exercise**: approximation of how many hours the participant exercises weekly, using a very broad definition of exercise, including, e.g., brisk walking
 - **humerus, ulna**: approximation of the humerus/ulna bone's length
 - **order**: order of trials, chosen from "alpha", "bravo", "charlie", "delta", "echo", "foxtrot"
-- **full-low, -mid, -high**: participant's reported Borg RPE value when considering fatigue felt in the whole body, for target area placement full, mid, or high
+- **full-low, -mid, -high**: participant's reported Borg RPE value when considering fatigue felt in the whole body, for target area placement full, mid, or high (note: only these values were used in the publication)
 - **arm-low, -mid, -high**: participant's reported Borg RPE value when considering fatigue felt in the shoulder and arm, for target area placement full, mid, or high
 
 ### Trial Order
