@@ -517,9 +517,6 @@ public class SequenceManager : MonoBehaviour {
     // Set target area to correct position
     targetArea.SetPosition(headset);
 
-    // Update env camera view of recorder
-    recorder.UpdateEnvCamera(targetArea);
-
     // Calculate grid mapping (for logging)
     targetArea.CalculateGridMapping();
     
