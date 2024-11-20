@@ -529,12 +529,12 @@ MonoBehaviour:
   m_margin: {x: -4.989973, y: -0.01985073, z: -4.973969, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 96739198}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 96739198}
+  m_maskType: 0
 --- !u!23 &96739198
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1280,12 +1280,12 @@ MonoBehaviour:
   m_margin: {x: -5.021373, y: -0.01985073, z: -5.0061126, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 228114840}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 228114840}
+  m_maskType: 0
 --- !u!23 &228114840
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2567,12 +2567,12 @@ MonoBehaviour:
   m_margin: {x: -5.014343, y: -0.01985073, z: -4.9912987, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 376655141}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 376655141}
+  m_maskType: 0
 --- !u!23 &376655141
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3495,12 +3495,12 @@ MonoBehaviour:
   m_margin: {x: -4.989973, y: -0.01985073, z: -4.973969, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 520904794}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 520904794}
+  m_maskType: 0
 --- !u!23 &520904794
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3667,12 +3667,12 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 576500843}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 576500843}
+  m_maskType: 0
 --- !u!23 &576500843
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -5987,12 +5987,12 @@ MonoBehaviour:
   m_margin: {x: -4.989973, y: -0.01985073, z: -4.973969, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 1229574630}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 1229574630}
+  m_maskType: 0
 --- !u!23 &1229574630
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -7017,7 +7017,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1333132542}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f03077631250bbb39290ccecdc1413d, type: 3}
+  m_Script: {fileID: 11500000, guid: f6a5dcb3f083e4f3bb12a0eb7047cfb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   simulatedUser: {fileID: 69392035}
@@ -7568,12 +7568,12 @@ MonoBehaviour:
   m_margin: {x: -4.989973, y: -0.01985073, z: -4.973969, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 1544007255}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 1544007255}
+  m_maskType: 0
 --- !u!23 &1544007255
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -8280,12 +8280,12 @@ MonoBehaviour:
   m_margin: {x: -4.989973, y: -0.01985073, z: -4.973969, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 1797442669}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 1797442669}
+  m_maskType: 0
 --- !u!23 &1797442669
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -8452,12 +8452,12 @@ MonoBehaviour:
   m_margin: {x: -5.014343, y: -0.01985073, z: -4.9912987, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 1805825486}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 1805825486}
+  m_maskType: 0
 --- !u!23 &1805825486
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -9315,12 +9315,12 @@ MonoBehaviour:
   m_margin: {x: -4.989973, y: -0.01985073, z: -4.973969, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 1948671706}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 1948671706}
+  m_maskType: 0
 --- !u!23 &1948671706
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -9563,12 +9563,12 @@ MonoBehaviour:
   m_margin: {x: -4.989973, y: -0.01985073, z: -4.973969, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 2001622894}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 2001622894}
+  m_maskType: 0
 --- !u!23 &2001622894
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -10590,12 +10590,12 @@ MonoBehaviour:
   m_margin: {x: -5.014343, y: -0.01985073, z: -4.9912987, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 2612557291952520516}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 2612557291952520516}
+  m_maskType: 0
 --- !u!33 &389970790126766987
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -10690,12 +10690,12 @@ MonoBehaviour:
   m_margin: {x: -5.014343, y: -0.01985073, z: -4.9912987, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 6442987132378280699}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 6442987132378280699}
+  m_maskType: 0
 --- !u!23 &2612557291952520516
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -10940,12 +10940,12 @@ MonoBehaviour:
   m_margin: {x: -5.021373, y: -0.01985073, z: -5.0061126, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 5951854677781420256}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 5951854677781420256}
+  m_maskType: 0
 --- !u!114 &5951854677903104680
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11172,12 +11172,12 @@ MonoBehaviour:
   m_margin: {x: -4.989973, y: -0.01985073, z: -4.973969, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 5951854678478151506}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 5951854678478151506}
+  m_maskType: 0
 --- !u!23 &5951854678478151506
 MeshRenderer:
   m_ObjectHideFlags: 0
